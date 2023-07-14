@@ -11,9 +11,17 @@
 #' @useDynLib churon, .registration = TRUE
 NULL
 
-#' Return string `"Hello world!"` to R.
+RSession <- new.env(parent = emptyenv())
+
+RSession$new <- function() .Call(wrap__RSession__new)
+
+RSession$model_for_path <- function(path) .Call(wrap__RSession__model_for_path, self, path)
+
 #' @export
-hello_world <- function() .Call(wrap__hello_world)
+`$.RSession` <- function (self, name) { func <- RSession[[name]]; environment(func) <- environment(); func }
+
+#' @export
+`[[.RSession` <- `$.RSession`
 
 
 # nolint end
