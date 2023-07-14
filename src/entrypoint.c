@@ -1,8 +1,8 @@
 // We need to forward routine registration from C to Rust
 // to avoid the linker removing the static library.
 
-void R_init_churontest_extendr(void *dll);
+void R_init_churon_extendr(void *dll);
 
-void R_init_churontest(void *dll) {
-    R_init_churontest_extendr(dll);
+void R_init_churon(void *dll) {
+    R_init_churon_extendr(dll);
 }
