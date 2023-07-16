@@ -1,56 +1,67 @@
-use extendr_api::*;
 use extendr_api::prelude::*;
-use tract_onnx::prelude::*;
-/*use ndarray::{ArrayViewD, ArrayD};*/
+use ort::{
+	environment::Environment,
+	ExecutionProvider, GraphOptimizationLevel,
+	LoggingLevel, SessionBuilder, Session, Value
+};
+use std::path::Path;
 
-pub struct RSession {
-    runnable: Option<SimplePlan<TypedFact, Box<dyn TypedOp>, Graph<TypedFact, Box<dyn TypedOp>>>>,
+struct RSession {
+    pub session: Session,
 }
 
 #[extendr]
 impl RSession {
-    pub fn new() -> Self {
-        RSession { runnable: None }
+    pub fn from_path(path: &str) -> extendr_api::Result<Self> {
+        let environment = Environment::builder()
+            .with_name("churon")
+            .with_log_level(LoggingLevel::Warning)
+            .build()
+            .map_err(|_| extendr_api::Error::EvalError("Failed to build environment".into()))?;
+
+        let environment = environment.into_arc();
+
+        let session = SessionBuilder::new(&environment)
+            .map_err(|_| extendr_api::Error::EvalError("Failed to set environment to sessionbuilder".into()))?
+            .with_optimization_level(GraphOptimizationLevel::Level1)
+            .map_err(|_| extendr_api::Error::EvalError("Failed to set optimization level".into()))?
+            .with_intra_threads(1)
+            .map_err(|_| extendr_api::Error::EvalError("Failed to set intra threads".into()))?
+            .with_execution_providers([
+                ExecutionProvider::CUDA(Default::default()),
+                ExecutionProvider::TensorRT(Default::default()),
+                ExecutionProvider::DirectML(Default::default()),
+                ExecutionProvider::OneDNN(Default::default()),
+                ExecutionProvider::CoreML(Default::default()),
+                ExecutionProvider::CPU(Default::default())
+            ])
+            .map_err(|_| extendr_api::Error::EvalError("Failed to set execution providers".into()))?
+            .with_model_from_file(Path::new(path))
+            .map_err(|_| extendr_api::Error::EvalError("Failed to load model".into()))?;
+
+        Ok(RSession{session})
     }
 
-    pub fn model_for_path(&mut self, path: &str) -> extendr_api::Result<()> {
-        let result = tract_onnx::onnx()
-            .model_for_path(path)
-            .map_err(|e| extendr_api::Error::Other(e.to_string()))?;
-        self.runnable = Some(result.into_optimized()
-            .map_err(|e| extendr_api::Error::Other(e.to_string()))?
-            .into_runnable()
-            .map_err(|e| extendr_api::Error::Other(e.to_string()))?);
-        Ok(())
+    pub fn run(&self) {
+        let data = vec![1; 200];
+
+        let array = Array::from_shape_vec((200,), data).unwrap();
+        let cow_array = ndarray::CowArray::from(array);
+
+        let input_tensor_values = vec![Value::from_array(self.session.allocator(), &cow_array).map_err(|e| extendr_api::Error::from(Box::new(e)))?];
+
+        // Perform the inference
+        let _ = self.session.run();
     }
 
-/*    pub fn run(&mut self, input: ArrayViewD<f32>) -> extendr_api::Result<Robj> {
-        let runnable = match &self.runnable {
-            Some(runnable) => runnable,
-            None => return Err(extendr_api::Error::Other("Model not loaded".to_string())),
-        };
-
-        // Convert ArrayViewD to ArrayD
-        let array = input.to_owned();
-
-        // Convert ArrayD to Tensor
-        let tensor = array.into_tensor();
-
-        let result = runnable.run(tvec!(tensor.into()))
-            .map_err(|e| extendr_api::Error::Other(e.to_string()))?;
-
-        // 첫 번째 출력만을 가져온다 가정합니다.
-        let tensor = result.get(0).ok_or_else(|| extendr_api::Error::Other("No output".to_string()))?;
-
-        // Convert Tensor to ndarray
-        let arr: ArrayD<f32> = tensor.to_array_view::<f32>().map_err(|e| extendr_api::Error::Other(e.to_string()))?;
-
-        // Convert ndarray to Robj
-        Ok(arr.try_into()?)
-    }*/
+    pub fn check_input(&self) {
+      let _ = println!("{:?}",&self.session.inputs);
+    }
 }
 
 extendr_module! {
     mod churon;
     impl RSession;
 }
+
+
