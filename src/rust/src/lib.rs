@@ -2,7 +2,7 @@ use extendr_api::prelude::*;
 use ort::{
 	environment::Environment,
 	ExecutionProvider, GraphOptimizationLevel,
-	LoggingLevel, SessionBuilder, Session, Value
+	LoggingLevel, SessionBuilder, Session,
 };
 use std::path::Path;
 
@@ -40,18 +40,6 @@ impl RSession {
             .map_err(|_| extendr_api::Error::EvalError("Failed to load model".into()))?;
 
         Ok(RSession{session})
-    }
-
-    pub fn run(&self) {
-        let data = vec![1; 200];
-
-        let array = Array::from_shape_vec((200,), data).unwrap();
-        let cow_array = ndarray::CowArray::from(array);
-
-        let input_tensor_values = vec![Value::from_array(self.session.allocator(), &cow_array).map_err(|e| extendr_api::Error::from(Box::new(e)))?];
-
-        // Perform the inference
-        let _ = self.session.run();
     }
 
     pub fn check_input(&self) {
