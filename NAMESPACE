@@ -2,4 +2,7 @@
 
 S3method("$",RSession)
 S3method("[[",RSession)
+export(install_onnxruntime)
+export(onnxruntime_install_path)
+export(onnxruntime_is_installed)
 useDynLib(churon, .registration = TRUE)

@@ -20,3 +20,8 @@ ort-onednn = [ "ort/onednn" ]
 ort-coreml = [ "ort/coreml" ]
 
 
+[profile.dev]
+rpath = true
+
+[profile.release]
+rpath = true
