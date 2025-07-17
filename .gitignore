@@ -1,3 +1,61 @@
+# R 관련 파일들
 .Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+*.Rcheck/
+*.tar.gz
+
+# 빌드 관련 파일들
 *.a
-*.Rcheck
+*.o
+*.so
+*.dll
+*.dylib
+
+# 테스트 및 디버그 파일들
+debug_input.R
+test_inference.R
+test_integration.R
+final_test_report.R
+
+# 배포 관련 임시 파일들
+DEPLOYMENT_SUMMARY.md
+
+# ONNX Runtime 설정 파일 (자동 생성됨)
+src/ort_config.env
+
+# Rust 빌드 파일들
+src/rust/target/
+src/rust/Cargo.lock
+src/.cargo/
+
+# 임시 파일들
+*.tmp
+*.temp
+*~
+
+# macOS 파일들
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows 파일들
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux 파일들
+*~
+
+# IDE 파일들
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 로그 파일들
+*.log
+
+# 체크 디렉토리들
+..Rcheck/

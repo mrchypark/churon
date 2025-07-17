@@ -1,183 +1,157 @@
-# churon
+# churon: ONNX Runtime Integration for R
 
-<!-- badges: start -->
 [![R-CMD-check](https://github.com/churon-project/churon/workflows/R-CMD-check/badge.svg)](https://github.com/churon-project/churon/actions)
-[![CRAN status](https://www.r-pkg.org/badges/version/churon)](https://CRAN.R-project.org/package=churon)
-<!-- badges: end -->
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-**churon** is an R package that provides high-performance ONNX Runtime integration for machine learning inference, with specialized support for Korean text processing models.
+churon은 R에서 ONNX Runtime을 사용하여 머신러닝 추론을 수행할 수 있게 해주는 패키지입니다. 특히 한국어 텍스트 처리 모델, 특히 한국어 띄어쓰기(kospacing) 모델에 특화된 지원을 제공합니다.
 
-## Features
+## 주요 특징
 
-- **ONNX Runtime Integration**: Run ONNX models directly in R with full support for various execution providers
-- **Korean Text Processing**: Built-in support for Korean spacing (kospacing) models
-- **High Performance**: Built with Rust for memory safety and performance
-- **Comprehensive Error Handling**: Robust validation and clear error messages
-- **Multiple Execution Providers**: Support for CPU, CUDA, TensorRT, DirectML, OneDNN, and CoreML
-- **Easy-to-Use API**: Simple and intuitive R interface
+- 🚀 **고성능**: Rust로 구현된 핵심 로직으로 빠른 성능
+- 🛡️ **메모리 안전성**: Rust의 메모리 안전성 보장
+- 🔧 **포괄적인 에러 처리**: 상세한 에러 메시지와 검증
+- 🌐 **다중 실행 제공자**: CUDA, TensorRT, DirectML, OneDNN, CoreML, CPU 지원
+- 🇰🇷 **한국어 특화**: 한국어 텍스트 처리 모델 내장
 
-## Installation
+## 설치
 
-### Prerequisites
-
-You need to have ONNX Runtime installed on your system. The package supports ONNX Runtime version 1.13.0 or higher.
-
-### Install from Source
-
-```r
-# Install development version from GitHub
-# install.packages("devtools")
-devtools::install_github("churon-project/churon")
-```
-
-## Quick Start
-
-### Basic Usage
-
-```r
-library(churon)
-
-# Check if ONNX Runtime is available
-if (check_onnx_runtime()) {
-  # Load an example model
-  models <- onnx_example_models()
-  print(models)
-  
-  # Create a session
-  session <- onnx_session(models["kospacing"])
-  
-  # Get model information
-  input_info <- onnx_input_info(session)
-  output_info <- onnx_output_info(session)
-  
-  print("Input information:")
-  print(input_info)
-  
-  print("Output information:")
-  print(output_info)
-  
-  # Run inference (example with dummy data)
-  # inputs <- list(input_tensor = your_input_data)
-  # result <- onnx_run(session, inputs)
-} else {
-  cat("ONNX Runtime is not available. Please install ONNX Runtime.\n")
-}
-```
-
-### Safe Usage with Error Handling
-
-```r
-library(churon)
-
-# Safe session creation
-session <- safe_onnx_session("path/to/model.onnx")
-if (!is.null(session)) {
-  cat("Session created successfully\n")
-  
-  # Safe inference
-  inputs <- list(input_tensor = matrix(rnorm(100), nrow = 10))
-  result <- safe_onnx_run(session, inputs)
-  
-  if (!is.null(result)) {
-    cat("Inference completed successfully\n")
-    print(result)
-  }
-}
-```
-
-### Working with Korean Text Models
-
-```r
-library(churon)
-
-# Use Korean spacing model
-session <- onnx_example_session("kospacing")
-
-# The kospacing model expects specific input format
-# (This is just an example - actual usage depends on model requirements)
-# text_input <- prepare_korean_text("한국어텍스트처리예제")
-# result <- onnx_run(session, list(input = text_input))
-```
-
-## API Reference
-
-### Core Functions
-
-- `onnx_session(model_path, providers = NULL)`: Create ONNX session
-- `onnx_run(session, inputs)`: Run inference
-- `onnx_input_info(session)`: Get input tensor information
-- `onnx_output_info(session)`: Get output tensor information
-- `onnx_providers(session)`: Get execution providers
-- `onnx_model_path(session)`: Get model file path
-
-### Example Model Functions
-
-- `onnx_example_models()`: List available example models
-- `find_model_path(model_name)`: Find model file path
-- `onnx_example_session(model_name)`: Create session with example model
-
-### Safe Functions
-
-- `safe_onnx_session(model_path, silent = FALSE)`: Safe session creation
-- `safe_onnx_run(session, inputs, silent = FALSE)`: Safe inference
-- `check_onnx_runtime()`: Check ONNX Runtime availability
-
-## Execution Providers
-
-churon supports multiple execution providers for optimal performance:
-
-- **CPU**: Default CPU execution
-- **CUDA**: NVIDIA GPU acceleration
-- **TensorRT**: NVIDIA TensorRT optimization
-- **DirectML**: DirectX Machine Learning (Windows)
-- **OneDNN**: Intel OneDNN optimization
-- **CoreML**: Apple CoreML (macOS)
-
-```r
-# Specify execution providers
-session <- onnx_session("model.onnx", providers = c("cuda", "cpu"))
-```
-
-## Error Handling
-
-The package provides comprehensive error handling with clear messages:
-
-```r
-# Example error handling patterns
-tryCatch({
-  session <- onnx_session("model.onnx")
-  result <- onnx_run(session, inputs)
-}, error = function(e) {
-  if (grepl("ONNX Runtime library not found", e$message)) {
-    cat("Please install ONNX Runtime\n")
-  } else if (grepl("Required input.*not provided", e$message)) {
-    cat("Check model input requirements with onnx_input_info()\n")
-  } else {
-    cat("Error:", e$message, "\n")
-  }
-})
-```
-
-## System Requirements
+### 시스템 요구사항
 
 - R (>= 4.0.0)
-- ONNX Runtime (>= 1.13.0)
-- Rust toolchain (for building from source)
+- Rust (>= 1.70.0)
+- ONNX Runtime (>= 1.13.0) - 자동으로 다운로드됩니다
 
-### Installing ONNX Runtime
+### 설치 방법
 
-Please refer to the [ONNX Runtime installation guide](https://onnxruntime.ai/docs/install/) for your platform.
+```r
+# GitHub에서 설치
+# devtools::install_github("churon-project/churon")
 
-## Contributing
+# 또는 로컬에서 빌드
+R CMD build .
+R CMD INSTALL churon_0.0.0.9000.tar.gz
+```
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+## 빠른 시작
 
-## License
+### 기본 사용법
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+```r
+library(churon)
 
-## Acknowledgments
+# 사용 가능한 예시 모델 확인
+models <- onnx_example_models()
+print(models)
 
-- Built with [extendr](https://github.com/extendr/extendr) for R-Rust integration
-- Uses [ONNX Runtime](https://onnxruntime.ai/) for machine learning inference
-- Includes Korean spacing models for text processing
+# 모델 로딩
+session <- onnx_session(models["kospacing"])
+
+# 모델 정보 확인
+print(session)
+
+# 입력/출력 정보 조회
+input_info <- onnx_input_info(session)
+output_info <- onnx_output_info(session)
+
+print(input_info[[1]]$name)    # 입력 텐서 이름
+print(input_info[[1]]$shape)   # 입력 텐서 형태
+print(input_info[[1]]$data_type) # 입력 텐서 데이터 타입
+```
+
+### 안전한 세션 생성
+
+```r
+# 에러 처리가 포함된 안전한 세션 생성
+session <- safe_onnx_session("path/to/model.onnx", optimize = TRUE)
+
+if (!is.null(session)) {
+  # 세션 사용
+  providers <- onnx_providers(session)
+  cat("사용 가능한 실행 제공자:", paste(providers, collapse = ", "), "\n")
+}
+```
+
+### 유틸리티 함수
+
+```r
+# 모델 경로 찾기
+model_path <- find_model_path("kospacing")
+
+# ONNX Runtime 정보 확인
+runtime_info <- get_onnx_runtime_info()
+print(runtime_info)
+
+# ONNX Runtime 사용 가능 여부 확인
+if (check_onnx_runtime_available()) {
+  cat("ONNX Runtime이 사용 가능합니다!\n")
+}
+```
+
+## API 참조
+
+### 핵심 함수
+
+- `onnx_session(model_path, providers = NULL)`: ONNX 세션 생성
+- `onnx_run(session, inputs)`: 추론 실행 (현재 제한적)
+- `onnx_input_info(session)`: 입력 텐서 정보 조회
+- `onnx_output_info(session)`: 출력 텐서 정보 조회
+- `onnx_providers(session)`: 실행 제공자 조회
+
+### 유틸리티 함수
+
+- `onnx_example_models()`: 예시 모델 목록
+- `find_model_path(model_name)`: 모델 경로 찾기
+- `safe_onnx_session(...)`: 안전한 세션 생성
+- `check_onnx_runtime_available()`: 런타임 사용 가능 여부 확인
+
+## 현재 상태 및 제한사항
+
+### ✅ 완전히 작동하는 기능
+
+- ONNX 모델 로딩 및 세션 관리
+- 모델 메타데이터 추출 및 조회
+- 다양한 실행 제공자 지원
+- 포괄적인 에러 처리
+- 유틸리티 함수들
+
+### ⚠️ 제한사항
+
+- **추론 실행**: 현재 텐서 변환이 완전히 구현되지 않아 실제 추론 실행(`onnx_run`)은 제한적입니다
+- **성능 최적화**: 일부 고급 성능 최적화 기능이 미완성입니다
+- **문서화**: 일부 함수의 문서화가 누락되어 있습니다
+
+## 개발 로드맵
+
+- [ ] ONNX 텐서 변환 로직 완성
+- [ ] 실제 추론 실행 기능 완성
+- [ ] 성능 최적화 기능 구현
+- [ ] 포괄적인 문서화
+- [ ] 추가 플랫폼 지원 (Windows, Linux)
+- [ ] 더 많은 예시 모델 추가
+
+## 기여하기
+
+1. 이 저장소를 포크합니다
+2. 기능 브랜치를 생성합니다 (`git checkout -b feature/amazing-feature`)
+3. 변경사항을 커밋합니다 (`git commit -m 'Add amazing feature'`)
+4. 브랜치에 푸시합니다 (`git push origin feature/amazing-feature`)
+5. Pull Request를 생성합니다
+
+## 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다. 자세한 내용은 [LICENSE](LICENSE) 파일을 참조하세요.
+
+## 지원
+
+- 이슈: [GitHub Issues](https://github.com/churon-project/churon/issues)
+- 문서: [패키지 문서](https://churon-project.github.io/churon/)
+
+## 감사의 말
+
+- [ONNX Runtime](https://onnxruntime.ai/) 팀
+- [extendr](https://github.com/extendr/extendr) 프로젝트
+- R 커뮤니티
+
+---
+
+**참고**: 이 패키지는 현재 개발 중이며, 일부 기능이 제한적일 수 있습니다. 프로덕션 환경에서 사용하기 전에 충분한 테스트를 권장합니다.

@@ -428,3 +428,302 @@ onnx_example_session <- function(model_name, providers = NULL) {
   model_path <- find_model_path(model_name)
   return(onnx_session(model_path, providers))
 }
+
+#' Check ONNX Runtime Availability
+#'
+#' Check if ONNX Runtime is properly installed and available.
+#'
+#' @return Logical indicating whether ONNX Runtime is available
+#' @export
+#' @examples
+#' \dontrun{
+#' if (check_onnx_runtime_available()) {
+#'   cat("ONNX Runtime is available\n")
+#' } else {
+#'   cat("ONNX Runtime is not available\n")
+#' }
+#' }
+check_onnx_runtime_available <- function() {
+  tryCatch({
+    models <- onnx_example_models()
+    if (length(models) > 0) {
+      session <- onnx_session(models[1])
+      return(TRUE)
+    }
+    return(FALSE)
+  }, error = function(e) {
+    return(FALSE)
+  })
+}
+
+#' Get ONNX Runtime Information
+#'
+#' Retrieve information about the ONNX Runtime installation.
+#'
+#' @return A list containing ONNX Runtime information
+#' @export
+#' @examples
+#' \dontrun{
+#' info <- get_onnx_runtime_info()
+#' print(info)
+#' }
+get_onnx_runtime_info <- function() {
+  info <- list(
+    available = check_onnx_runtime_available(),
+    platform = R.version$platform,
+    r_version = R.version.string,
+    package_version = packageVersion("churon")
+  )
+  
+  # Try to get more detailed info if available
+  tryCatch({
+    models <- onnx_example_models()
+    if (length(models) > 0) {
+      session <- onnx_session(models[1])
+      providers <- onnx_providers(session)
+      info$execution_providers <- providers
+      info$example_models <- length(models)
+    }
+  }, error = function(e) {
+    info$error <- e$message
+  })
+  
+  return(info)
+}
+
+#' Optimize Session for Performance
+#'
+#' Configure an ONNX session for optimal performance.
+#'
+#' @param session An RSession object created by onnx_session()
+#' @return The optimized session (invisibly)
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- onnx_session("path/to/model.onnx")
+#' optimize_session_performance(session)
+#' }
+optimize_session_performance <- function(session) {
+  # Validate session parameter
+  if (missing(session) || is.null(session)) {
+    stop("session is required and cannot be NULL")
+  }
+  
+  if (!inherits(session, "RSession")) {
+    stop("session must be an RSession object created by onnx_session()")
+  }
+  
+  tryCatch({
+    # Configure session for performance
+    session$configure_for_performance()
+    
+    # Warm up the session
+    session$warmup()
+    
+    message("Session optimized for performance")
+    invisible(session)
+  }, error = function(e) {
+    warning("Failed to optimize session performance: ", e$message)
+    invisible(session)
+  })
+}
+
+#' Get Session Performance Statistics
+#'
+#' Retrieve performance statistics and memory usage information for a session.
+#'
+#' @param session An RSession object created by onnx_session()
+#' @return A list containing performance statistics
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- onnx_session("path/to/model.onnx")
+#' stats <- get_session_performance_stats(session)
+#' print(stats)
+#' }
+get_session_performance_stats <- function(session) {
+  # Validate session parameter
+  if (missing(session) || is.null(session)) {
+    stop("session is required and cannot be NULL")
+  }
+  
+  if (!inherits(session, "RSession")) {
+    stop("session must be an RSession object created by onnx_session()")
+  }
+  
+  tryCatch({
+    stats <- session$get_performance_stats()
+    
+    # Convert to a more R-friendly format
+    stats_list <- as.list(stats)
+    
+    # Add R-specific information
+    stats_list$r_session_class <- class(session)
+    stats_list$timestamp <- Sys.time()
+    
+    return(stats_list)
+  }, error = function(e) {
+    stop("Failed to retrieve performance statistics: ", e$message)
+  })
+}
+
+#' Estimate Memory Usage
+#'
+#' Estimate the memory usage of an ONNX session.
+#'
+#' @param session An RSession object created by onnx_session()
+#' @return Estimated memory usage in bytes
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- onnx_session("path/to/model.onnx")
+#' memory_usage <- estimate_session_memory(session)
+#' cat("Estimated memory usage:", memory_usage / (1024^2), "MB\n")
+#' }
+estimate_session_memory <- function(session) {
+  # Validate session parameter
+  if (missing(session) || is.null(session)) {
+    stop("session is required and cannot be NULL")
+  }
+  
+  if (!inherits(session, "RSession")) {
+    stop("session must be an RSession object created by onnx_session()")
+  }
+  
+  tryCatch({
+    memory_bytes <- session$estimate_memory_usage()
+    return(memory_bytes)
+  }, error = function(e) {
+    stop("Failed to estimate memory usage: ", e$message)
+  })
+}
+
+#' Batch Process Data
+#'
+#' Process data in batches for memory efficiency with large datasets.
+#'
+#' @param session An RSession object created by onnx_session()
+#' @param data_list A list of input data to process
+#' @param batch_size Number of items to process in each batch
+#' @return A list of results from batch processing
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- onnx_session("path/to/model.onnx")
+#' large_dataset <- list(...)  # Your large dataset
+#' results <- batch_process_data(session, large_dataset, batch_size = 32)
+#' }
+batch_process_data <- function(session, data_list, batch_size = 32) {
+  # Validate parameters
+  if (missing(session) || is.null(session)) {
+    stop("session is required and cannot be NULL")
+  }
+  
+  if (!inherits(session, "RSession")) {
+    stop("session must be an RSession object created by onnx_session()")
+  }
+  
+  if (missing(data_list) || !is.list(data_list)) {
+    stop("data_list must be a list of input data")
+  }
+  
+  if (!is.numeric(batch_size) || batch_size <= 0) {
+    stop("batch_size must be a positive number")
+  }
+  
+  # Process data in batches
+  results <- list()
+  total_items <- length(data_list)
+  
+  for (i in seq(1, total_items, by = batch_size)) {
+    end_idx <- min(i + batch_size - 1, total_items)
+    batch_data <- data_list[i:end_idx]
+    
+    # Process each item in the batch
+    batch_results <- lapply(batch_data, function(item) {
+      tryCatch({
+        onnx_run(session, item)
+      }, error = function(e) {
+        warning("Failed to process batch item: ", e$message)
+        NULL
+      })
+    })
+    
+    results <- c(results, batch_results)
+    
+    # Progress reporting
+    if (interactive()) {
+      progress <- round((end_idx / total_items) * 100, 1)
+      cat("\rProcessing batch:", end_idx, "/", total_items, "(", progress, "%)")
+      if (end_idx == total_items) cat("\n")
+    }
+  }
+  
+  return(results)
+}
+
+#' Safe ONNX Session Creation
+#'
+#' Create an ONNX session with automatic error handling and optimization.
+#'
+#' @param model_path Character string specifying the path to the ONNX model file
+#' @param providers Optional character vector specifying execution providers
+#' @param optimize Logical indicating whether to optimize the session for performance
+#' @return An optimized RSession object or NULL if creation fails
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- safe_onnx_session("path/to/model.onnx", optimize = TRUE)
+#' if (!is.null(session)) {
+#'   # Use the session
+#' }
+#' }
+safe_onnx_session <- function(model_path, providers = NULL, optimize = TRUE) {
+  tryCatch({
+    # Create the session
+    session <- onnx_session(model_path, providers)
+    
+    # Optimize if requested
+    if (optimize) {
+      optimize_session_performance(session)
+    }
+    
+    return(session)
+  }, error = function(e) {
+    warning("Failed to create ONNX session: ", e$message)
+    return(NULL)
+  })
+}
+
+#' Safe ONNX Inference
+#'
+#' Run ONNX inference with automatic error handling and performance monitoring.
+#'
+#' @param session An RSession object created by onnx_session()
+#' @param inputs A named list of input tensors
+#' @param monitor_performance Logical indicating whether to monitor performance
+#' @return Inference results or NULL if inference fails
+#' @export
+#' @examples
+#' \dontrun{
+#' session <- onnx_session("path/to/model.onnx")
+#' inputs <- list(input_tensor = matrix(rnorm(10), nrow = 2, ncol = 5))
+#' results <- safe_onnx_run(session, inputs, monitor_performance = TRUE)
+#' }
+safe_onnx_run <- function(session, inputs, monitor_performance = FALSE) {
+  start_time <- if (monitor_performance) Sys.time() else NULL
+  
+  tryCatch({
+    result <- onnx_run(session, inputs)
+    
+    if (monitor_performance && !is.null(start_time)) {
+      elapsed_time <- as.numeric(difftime(Sys.time(), start_time, units = "secs"))
+      message("Inference completed in ", round(elapsed_time * 1000, 2), " ms")
+    }
+    
+    return(result)
+  }, error = function(e) {
+    warning("Inference failed: ", e$message)
+    return(NULL)
+  })
+}

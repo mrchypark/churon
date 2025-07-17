@@ -69,7 +69,7 @@ test_that("error handling in real scenarios", {
   
   expect_error(
     onnx_session(temp_file),
-    "Model load failed"
+    "Failed to create ONNX session"
   )
   
   # Test with empty path

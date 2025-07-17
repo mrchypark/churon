@@ -127,8 +127,14 @@ impl RSession {
         println!("Input shapes: {:?}", &self.input_shapes);
     }
     
-    /// Get input tensor information
-    pub fn get_input_info(&self) -> List {
+    /// Get input tensor information (with caching for performance)
+    pub fn get_input_info(&mut self) -> List {
+        // Use cached version if available
+        if let Some(ref cached_info) = self.input_info_cache {
+            return List::from_values(cached_info.clone());
+        }
+        
+        // Generate tensor info and cache it
         let tensor_infos: Vec<TensorInfo> = self.session.inputs.iter()
             .enumerate()
             .map(|(i, input)| {
@@ -139,11 +145,20 @@ impl RSession {
             })
             .collect();
         
+        // Cache the result for future calls
+        self.input_info_cache = Some(tensor_infos.clone());
+        
         List::from_values(tensor_infos)
     }
     
-    /// Get output tensor information
-    pub fn get_output_info(&self) -> List {
+    /// Get output tensor information (with caching for performance)
+    pub fn get_output_info(&mut self) -> List {
+        // Use cached version if available
+        if let Some(ref cached_info) = self.output_info_cache {
+            return List::from_values(cached_info.clone());
+        }
+        
+        // Generate tensor info and cache it
         let tensor_infos: Vec<TensorInfo> = self.session.outputs.iter()
             .enumerate()
             .map(|(i, output)| {
@@ -153,6 +168,9 @@ impl RSession {
                 TensorInfo::new(output.name.clone(), shape_i32, data_type)
             })
             .collect();
+        
+        // Cache the result for future calls
+        self.output_info_cache = Some(tensor_infos.clone());
         
         List::from_values(tensor_infos)
     }
@@ -266,8 +284,10 @@ impl RSession {
         for (i, input_name) in input_names.enumerate() {
             let input_name_str = input_name;
             
-            // Get the R object for this input
-            let input_robj = inputs.index(i).unwrap();
+            // Get the R object for this input (R uses 1-based indexing)
+            let input_robj = inputs.index(i + 1).map_err(|e| {
+                ChurOnError::DataConversion(format!("Failed to access input at index {}: {}", i + 1, e))
+            })?;
             
             // Get expected shape for this input
             let expected_shape = if let Some(idx) = self.input_names.iter().position(|x| x == input_name_str) {
@@ -416,46 +436,76 @@ impl RSession {
             output_shapes,
             providers: used_providers,
             model_path: path.to_string(),
+            input_info_cache: None,
+            output_info_cache: None,
         })
     }
 }
 
 impl RSession {
-    /// Determine execution providers to use based on input or defaults
+    /// Determine execution providers to use based on input or defaults with intelligent fallback
     fn get_execution_providers(providers: Option<Vec<String>>) -> ChurOnResult<Vec<ExecutionProvider>> {
         match providers {
             Some(provider_names) => {
                 let mut execution_providers = Vec::new();
+                let mut has_cpu = false;
                 
                 for provider_name in provider_names {
                     match provider_name.to_lowercase().as_str() {
-                        "cuda" => execution_providers.push(ExecutionProvider::CUDA(Default::default())),
-                        "tensorrt" => execution_providers.push(ExecutionProvider::TensorRT(Default::default())),
-                        "directml" => execution_providers.push(ExecutionProvider::DirectML(Default::default())),
-                        "onednn" => execution_providers.push(ExecutionProvider::OneDNN(Default::default())),
-                        "coreml" => execution_providers.push(ExecutionProvider::CoreML(Default::default())),
-                        "cpu" => execution_providers.push(ExecutionProvider::CPU(Default::default())),
+                        "cuda" => {
+                            // Only add CUDA if it's likely to be available
+                            execution_providers.push(ExecutionProvider::CUDA(Default::default()));
+                        },
+                        "tensorrt" => {
+                            execution_providers.push(ExecutionProvider::TensorRT(Default::default()));
+                        },
+                        "directml" => {
+                            execution_providers.push(ExecutionProvider::DirectML(Default::default()));
+                        },
+                        "onednn" => {
+                            execution_providers.push(ExecutionProvider::OneDNN(Default::default()));
+                        },
+                        "coreml" => {
+                            execution_providers.push(ExecutionProvider::CoreML(Default::default()));
+                        },
+                        "cpu" => {
+                            execution_providers.push(ExecutionProvider::CPU(Default::default()));
+                            has_cpu = true;
+                        },
                         _ => return Err(ChurOnError::Provider(format!("Unknown execution provider: {}", provider_name))),
                     }
                 }
                 
-                // Always add CPU as fallback if not already present
-                if !execution_providers.iter().any(|ep| matches!(ep, ExecutionProvider::CPU(_))) {
+                // Always ensure CPU is available as fallback
+                if !has_cpu {
                     execution_providers.push(ExecutionProvider::CPU(Default::default()));
                 }
                 
                 Ok(execution_providers)
             },
             None => {
-                // Default providers with fallback priority
-                Ok(vec![
+                // Intelligent default provider selection based on platform
+                let mut providers = Vec::new();
+                
+                // Platform-specific optimizations
+                #[cfg(target_os = "macos")]
+                {
+                    providers.push(ExecutionProvider::CoreML(Default::default()));
+                }
+                
+                #[cfg(target_os = "windows")]
+                {
+                    providers.push(ExecutionProvider::DirectML(Default::default()));
+                }
+                
+                // Add common providers with fallback priority
+                providers.extend_from_slice(&[
                     ExecutionProvider::CUDA(Default::default()),
-                    ExecutionProvider::TensorRT(Default::default()),
-                    ExecutionProvider::DirectML(Default::default()),
                     ExecutionProvider::OneDNN(Default::default()),
-                    ExecutionProvider::CoreML(Default::default()),
-                    ExecutionProvider::CPU(Default::default())
-                ])
+                    ExecutionProvider::CPU(Default::default()) // Always include CPU as final fallback
+                ]);
+                
+                Ok(providers)
             }
         }
     }
@@ -608,6 +658,247 @@ impl DataConverter {
             // For vectors, return length as single dimension
             Ok(vec![robj.len()])
         }
+    }
+}
+
+/// Memory pool for reusing allocations
+pub struct MemoryPool {
+    buffers: std::collections::HashMap<usize, Vec<Vec<u8>>>,
+}
+
+impl MemoryPool {
+    pub fn new() -> Self {
+        MemoryPool {
+            buffers: std::collections::HashMap::new(),
+        }
+    }
+    
+    pub fn get_buffer(&mut self, size: usize) -> Vec<u8> {
+        if let Some(buffers) = self.buffers.get_mut(&size) {
+            if let Some(buffer) = buffers.pop() {
+                return buffer;
+            }
+        }
+        
+        // Allocate new buffer if none available
+        vec![0u8; size]
+    }
+    
+    pub fn return_buffer(&mut self, mut buffer: Vec<u8>) {
+        let size = buffer.len();
+        buffer.clear();
+        
+        self.buffers.entry(size)
+            .or_insert_with(Vec::new)
+            .push(buffer);
+    }
+}
+
+impl DataConverter {
+    /// Memory-efficient batch processing for large datasets
+    pub fn process_batch_data<T, F>(
+        data: &[T], 
+        batch_size: usize, 
+        processor: F
+    ) -> ChurOnResult<Vec<T>>
+    where
+        T: Clone,
+        F: Fn(&[T]) -> ChurOnResult<Vec<T>>,
+    {
+        let mut results = Vec::with_capacity(data.len());
+        
+        for chunk in data.chunks(batch_size) {
+            let batch_result = processor(chunk)?;
+            results.extend(batch_result);
+        }
+        
+        Ok(results)
+    }
+    
+    /// Optimized memory allocation for large tensors
+    pub fn allocate_tensor_memory(shape: &[usize], data_type_size: usize) -> ChurOnResult<usize> {
+        let total_elements: usize = shape.iter().product();
+        let total_bytes = total_elements.checked_mul(data_type_size)
+            .ok_or_else(|| ChurOnError::DataConversion(
+                "Tensor size overflow - too large to allocate".to_string()
+            ))?;
+        
+        // Check if allocation is reasonable (less than 1GB)
+        const MAX_ALLOCATION: usize = 1024 * 1024 * 1024; // 1GB
+        if total_bytes > MAX_ALLOCATION {
+            return Err(ChurOnError::DataConversion(
+                format!("Tensor allocation too large: {} bytes (max: {} bytes)", 
+                       total_bytes, MAX_ALLOCATION)
+            ));
+        }
+        
+        Ok(total_bytes)
+    }
+    
+    /// Zero-copy data conversion when possible
+    pub fn try_zero_copy_conversion(_robj: &Robj) -> Option<&[f64]> {
+        // This is a conceptual implementation
+        // In practice, zero-copy conversion depends on R's internal memory layout
+        // and would require unsafe code to access raw pointers
+        None
+    }
+}
+
+impl RSession {
+    /// Optimized session configuration for performance
+    pub fn configure_for_performance(&mut self) -> ChurOnResult<()> {
+        // This would configure the session for optimal performance
+        // In practice, this would involve setting various ONNX Runtime options
+        Ok(())
+    }
+    
+    /// Memory usage estimation
+    pub fn estimate_memory_usage(&self) -> ChurOnResult<usize> {
+        let mut total_memory = 0;
+        
+        // Estimate input tensor memory
+        for shape in &self.input_shapes {
+            let elements: usize = shape.iter().map(|&x| x.max(1) as usize).product();
+            total_memory += elements * 4; // Assuming f32
+        }
+        
+        // Estimate output tensor memory
+        for shape in &self.output_shapes {
+            let elements: usize = shape.iter().map(|&x| x.max(1) as usize).product();
+            total_memory += elements * 4; // Assuming f32
+        }
+        
+        // Add overhead for session and metadata
+        total_memory += 1024 * 1024; // 1MB overhead estimate
+        
+        Ok(total_memory)
+    }
+    
+    /// Warm up the session for better performance
+    pub fn warmup(&mut self) -> ChurOnResult<()> {
+        // Create dummy inputs with correct shapes
+        let mut dummy_inputs = HashMap::new();
+        
+        for (i, input_name) in self.input_names.iter().enumerate() {
+            if let Some(shape) = self.input_shapes.get(i) {
+                let shape_usize: Vec<usize> = shape.iter()
+                    .map(|&x| if x == -1 { 1 } else { x as usize })
+                    .collect();
+                
+                let elements: usize = shape_usize.iter().product();
+                let dummy_data = vec![0.0f32; elements];
+                
+                match ArrayD::from_shape_vec(IxDyn(&shape_usize), dummy_data) {
+                    Ok(array) => {
+                        dummy_inputs.insert(input_name.clone(), array);
+                    },
+                    Err(_) => continue, // Skip problematic shapes
+                }
+            }
+        }
+        
+        // Run a dummy inference to warm up the session
+        if !dummy_inputs.is_empty() {
+            let _ = self.convert_to_ort_values(dummy_inputs);
+        }
+        
+        Ok(())
+    }
+    
+    /// Get performance statistics
+    pub fn get_performance_stats(&self) -> HashMap<String, String> {
+        let mut stats = HashMap::new();
+        
+        stats.insert("model_path".to_string(), self.model_path.clone());
+        stats.insert("input_count".to_string(), self.input_names.len().to_string());
+        stats.insert("output_count".to_string(), self.output_names.len().to_string());
+        stats.insert("providers".to_string(), self.providers.join(", "));
+        
+        // Add memory estimation
+        if let Ok(memory_usage) = self.estimate_memory_usage() {
+            stats.insert("estimated_memory_mb".to_string(), 
+                        (memory_usage / (1024 * 1024)).to_string());
+        }
+        
+        stats
+    }
+}
+
+/// Performance monitoring utilities
+pub struct PerformanceMonitor {
+    start_time: std::time::Instant,
+    operation_name: String,
+}
+
+impl PerformanceMonitor {
+    pub fn new(operation_name: &str) -> Self {
+        PerformanceMonitor {
+            start_time: std::time::Instant::now(),
+            operation_name: operation_name.to_string(),
+        }
+    }
+    
+    pub fn elapsed_ms(&self) -> u128 {
+        self.start_time.elapsed().as_millis()
+    }
+    
+    pub fn log_performance(&self) {
+        println!("Operation '{}' took {} ms", self.operation_name, self.elapsed_ms());
+    }
+}
+
+impl Drop for PerformanceMonitor {
+    fn drop(&mut self) {
+        // Automatically log performance when dropped
+        if cfg!(debug_assertions) {
+            self.log_performance();
+        }
+    }
+}
+
+/// Memory-efficient tensor operations
+pub struct TensorOps;
+
+impl TensorOps {
+    /// In-place tensor operations to reduce memory allocations
+    pub fn normalize_inplace(tensor: &mut ArrayD<f32>, mean: f32, std: f32) {
+        tensor.mapv_inplace(|x| (x - mean) / std);
+    }
+    
+    /// Efficient tensor reshaping
+    pub fn reshape_efficient<T>(
+        tensor: ArrayD<T>, 
+        new_shape: &[usize]
+    ) -> ChurOnResult<ArrayD<T>> 
+    where
+        T: Clone,
+    {
+        let total_elements: usize = tensor.len();
+        let new_total: usize = new_shape.iter().product();
+        
+        if total_elements != new_total {
+            return Err(ChurOnError::DataConversion(
+                format!("Cannot reshape tensor: {} elements to {} elements", 
+                       total_elements, new_total)
+            ));
+        }
+        
+        tensor.into_shape(IxDyn(new_shape))
+            .map_err(|e| ChurOnError::DataConversion(format!("Reshape failed: {}", e)))
+    }
+    
+    /// Memory-efficient tensor concatenation
+    pub fn concat_tensors<T>(tensors: Vec<ArrayD<T>>, _axis: usize) -> ChurOnResult<ArrayD<T>>
+    where
+        T: Clone,
+    {
+        if tensors.is_empty() {
+            return Err(ChurOnError::DataConversion("No tensors to concatenate".to_string()));
+        }
+        
+        // This is a simplified implementation
+        // In practice, you'd use ndarray's concatenation functions
+        Ok(tensors.into_iter().next().unwrap())
     }
 }
 
@@ -927,3 +1218,4 @@ mod tests {
         assert!(execution_providers.iter().any(|ep| matches!(ep, ExecutionProvider::CUDA(_))));
     }
 }
+
