@@ -3,6 +3,9 @@ LIBDIR = $(TARGET_DIR)/release
 STATLIB = $(LIBDIR)/libchuron.a
 PKG_LIBS = -L$(LIBDIR) -lchuron
 
+# Load ONNX Runtime configuration if available
+-include ort_config.env
+
 all: C_clean
 
 $(SHLIB): $(STATLIB)
@@ -10,6 +13,10 @@ $(SHLIB): $(STATLIB)
 CARGOTMP = $(CURDIR)/.cargo
 
 $(STATLIB):
+	# Load ONNX Runtime environment variables
+	if [ -f "ort_config.env" ]; then \
+		. ./ort_config.env; \
+	fi; \
 	# In some environments, ~/.cargo/bin might not be included in PATH, so we need
 	# to set it here to ensure cargo can be invoked. It is appended to PATH and
 	# therefore is only used if cargo is absent from the user's PATH.
@@ -17,6 +24,7 @@ $(STATLIB):
 		export CARGO_HOME=$(CARGOTMP); \
 	fi && \
 		export PATH="$(PATH):$(HOME)/.cargo/bin" && \
+		if [ -f "ort_config.env" ]; then . ./ort_config.env; fi && \
 		cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		rm -Rf $(CARGOTMP) && \

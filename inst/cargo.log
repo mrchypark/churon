@@ -1,5 +1,0 @@
----
-Trying to find a suitable Cargo using tools::R_user_dir('cargo', 'cache').
-Trying to use Cargo at: /home/mrchypark/.cache/R/cargo/cargo/bin/cargo
-Cargo version '1.70.0' is available, which satisfies the need for '1.56'.
----

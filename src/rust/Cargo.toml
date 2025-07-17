@@ -10,13 +10,16 @@ name = 'churon'
 [dependencies]
 extendr-api = { version = "0.4.0", features = ["ndarray"] }
 ndarray = "0.15.6"
-ort = { version = "1.15.0", default-features = false , features = [ "load-dynamic" ]}
+ort = { version = "1.16.3", default-features = false, features = ["load-dynamic", "copy-dylibs"] }
 
 [features]
-ort-cuda = [ "ort/cuda" ]
-ort-tensorrt = [ "ort/tensorrt" ]
-ort-directml = [ "ort/directml" ]
-ort-onednn = [ "ort/onednn" ]
-ort-coreml = [ "ort/coreml" ]
+default = []
+ort-cuda = ["ort/cuda"]
+ort-tensorrt = ["ort/tensorrt"]
+ort-directml = ["ort/directml"]
+ort-onednn = ["ort/onednn"]
+ort-coreml = ["ort/coreml"]
+ort-rocm = ["ort/rocm"]
+ort-openvino = ["ort/openvino"]
 
 

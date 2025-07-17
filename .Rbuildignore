@@ -1,4 +1,11 @@
-^churon\.Rproj$
+^.*\.Rproj$
 ^\.Rproj\.user$
-^src/\.cargo$
-^LICENSE\.md$
+^\.git$
+^\.gitignore$
+^\.kiro$
+^README\.md$
+^NEWS\.md$
+^src/rust/\.devcontainer$
+^src/rust/target$
+^churon\.Rcheck$
+^churon.*\.tar\.gz$

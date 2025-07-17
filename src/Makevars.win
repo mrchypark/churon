@@ -5,6 +5,9 @@ LIBDIR = $(TARGET_DIR)/$(TARGET)/release
 STATLIB = $(LIBDIR)/libchuron.a
 PKG_LIBS = -L$(LIBDIR) -lchuron -lws2_32 -ladvapi32 -luserenv -lbcrypt -lntdll
 
+# Load ONNX Runtime configuration if available
+-include ort_config.env
+
 all: C_clean
 
 $(SHLIB): $(STATLIB)
@@ -21,12 +24,17 @@ $(STATLIB):
 	# https://github.com/r-windows/rtools-packages/blob/2407b23f1e0925bbb20a4162c963600105236318/mingw-w64-gcc/PKGBUILD#L313-L316
 	touch $(TARGET_DIR)/libgcc_mock/libgcc_eh.a
 
+	# Load ONNX Runtime environment variables
+	if [ -f "ort_config.env" ]; then \
+		. ./ort_config.env; \
+	fi; \
 	# CARGO_LINKER is provided in Makevars.ucrt for R >= 4.2
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		export CARGO_HOME=$(CARGOTMP); \
 	fi && \
 		export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="$(CARGO_LINKER)" && \
-		export LIBRARY_PATH="$${LIBRARY_PATH};$(CURDIR)/$(TARGET_DIR)/libgcc_mock" && \
+		export LIBRARY_PATH="${LIBRARY_PATH};$(CURDIR)/$(TARGET_DIR)/libgcc_mock" && \
+		if [ -f "ort_config.env" ]; then . ./ort_config.env; fi && \
 		cargo build --target=$(TARGET) --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		rm -Rf $(CARGOTMP) && \

@@ -17,11 +17,37 @@ RSession$from_path <- function(path) .Call(wrap__RSession__from_path, path)
 
 RSession$check_input <- function() invisible(.Call(wrap__RSession__check_input, self))
 
+RSession$get_input_info <- function() .Call(wrap__RSession__get_input_info, self)
+
+RSession$get_output_info <- function() .Call(wrap__RSession__get_output_info, self)
+
+RSession$get_providers <- function() .Call(wrap__RSession__get_providers, self)
+
+RSession$get_model_path <- function() .Call(wrap__RSession__get_model_path, self)
+
+RSession$run <- function(inputs) .Call(wrap__RSession__run, self, inputs)
+
+TensorInfo <- new.env(parent = emptyenv())
+
+TensorInfo$new <- function(name, shape, data_type) .Call(wrap__TensorInfo__new, name, shape, data_type)
+
+TensorInfo$get_name <- function() .Call(wrap__TensorInfo__get_name, self)
+
+TensorInfo$get_shape <- function() .Call(wrap__TensorInfo__get_shape, self)
+
+TensorInfo$get_data_type <- function() .Call(wrap__TensorInfo__get_data_type, self)
+
 #' @export
 `$.RSession` <- function (self, name) { func <- RSession[[name]]; environment(func) <- environment(); func }
 
 #' @export
 `[[.RSession` <- `$.RSession`
+
+#' @export
+`$.TensorInfo` <- function (self, name) { func <- TensorInfo[[name]]; environment(func) <- environment(); func }
+
+#' @export
+`[[.TensorInfo` <- `$.TensorInfo`
 
 
 # nolint end
