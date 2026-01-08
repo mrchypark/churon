@@ -11,7 +11,8 @@ Authors@R: person(given = "Chanyub",
 Description: Provides R bindings for ONNX Runtime to run machine learning inference
     with ONNX models. Built with Rust for high performance and memory safety,
     offering comprehensive error handling and validation. Includes bundled
-    example models (MNIST) for testing.
+    example models (MNIST) for testing. Supports macOS (ARM64/x64),
+    Linux (x64/aarch64), and Windows (x64).
 License: MIT + file LICENSE
 URL: https://github.com/churon-project/churon
 BugReports: https://github.com/churon-project/churon/issues
