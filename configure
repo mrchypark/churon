@@ -25,8 +25,8 @@ esac
 
 echo "Detected platform: $PLATFORM-$ARCH"
 
-# ONNX Runtime version
-ORT_VERSION="1.16.3"
+# ONNX Runtime version - must be >= 1.23.0 for ort v2.x
+ORT_VERSION="1.23.0"
 
 # Set platform-specific variables
 if [ "$PLATFORM" = "linux" ]; then

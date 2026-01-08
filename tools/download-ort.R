@@ -2,8 +2,8 @@
 # This script downloads and configures ONNX Runtime for the current platform
 
 download_onnx_runtime <- function() {
-  # ONNX Runtime version
-  ort_version <- "1.16.3"
+  # ONNX Runtime version - must be >= 1.23.0 for ort v2.x
+  ort_version <- "1.23.0"
   
   # Detect platform and architecture
   platform <- Sys.info()["sysname"]
