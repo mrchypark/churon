@@ -69,9 +69,9 @@ test_that("error handling in real scenarios", {
   temp_file <- tempfile(fileext = ".txt")
   writeLines("not an onnx model", temp_file)
   on.exit(unlink(temp_file))
-  
+
   expect_error(
-    onnx_session(temp_file),
+    suppressWarnings(onnx_session(temp_file)),
     "Failed to create ONNX session"
   )
   

@@ -14,7 +14,7 @@ test_that("error handling for invalid model paths", {
   on.exit(unlink(temp_file))
 
   expect_error(
-    onnx_session(temp_file),
+    suppressWarnings(onnx_session(temp_file)),
     "Failed to create ONNX session"
   )
 
