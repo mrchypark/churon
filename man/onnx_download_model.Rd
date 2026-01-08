@@ -2,29 +2,18 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_download_model}
 \alias{onnx_download_model}
-\title{Download Model from ONNX Model Zoo}
+\title{ONNX Download Model}
 \usage{
 onnx_download_model(name, url)
 }
 \arguments{
-\item{name}{Model name for the downloaded file}
+\item{name}{Character string specifying the model name}
 
-\item{url}{URL to download the model from}
+\item{url}{Character string specifying the download URL}
 }
 \value{
-Character string with the path to the downloaded model file
-}
+Character string with the path to the downloaded model
 }
 \description{
-Download a model from the ONNX Model Zoo.}
-\examples{
-\dontrun{
-# Download MNIST model
-model_path <- onnx_download_model("mnist",
-  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
-
-# Download SqueezeNet
-model_path <- onnx_download_model("squeezenet1.0",
-  "https://github.com/onnx/models/raw/main/validated/vision/classification/squeezenet/model/squeezenet1.0-8.onnx")
-}
+Download a model from the ONNX Model Zoo.
 }

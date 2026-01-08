@@ -2,7 +2,7 @@
 % Please edit documentation in R/onnx_interface.R, R/zzz.R
 \name{check_onnx_runtime_available}
 \alias{check_onnx_runtime_available}
-\title{Check ONNX Runtime Availability}
+\title{Check ONNX Runtime Available}
 \usage{
 check_onnx_runtime_available()
 
@@ -14,16 +14,7 @@ Logical indicating whether ONNX Runtime is available
 Logical indicating whether ONNX Runtime is available
 }
 \description{
-Check if ONNX Runtime is properly installed and available.
+Check if ONNX Runtime is available.
 
 This function checks if ONNX Runtime is properly configured and available.
-}
-\examples{
-\dontrun{
-if (check_onnx_runtime_available()) {
-  cat("ONNX Runtime is available\n")
-} else {
-  cat("ONNX Runtime is not available\n")
-}
-}
 }

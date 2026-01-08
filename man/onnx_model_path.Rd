@@ -10,15 +10,15 @@ onnx_model_path(session)
 \item{session}{An RSession object created by onnx_session()}
 }
 \value{
-A character string containing the model file path
+Character string with the model path
 }
 \description{
-Retrieve the file path of the loaded model.
+Get the model path from a session.
 }
 \examples{
 \dontrun{
 session <- onnx_session("path/to/model.onnx")
 model_path <- onnx_model_path(session)
-print(model_path)
+cat("Model path:", model_path, "\n")
 }
 }

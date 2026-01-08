@@ -456,23 +456,17 @@ safe_onnx_run <- function(session, inputs, monitor_performance = FALSE) {
 
 #' Safe ONNX Session Creation
 #'
-#' Create an ONNX session with automatic error handling and optimization.
+#' Safe ONNX Session Creation
+#'
+#' Create an ONNX session with automatic error handling.
 #'
 #' @param model_path Character string specifying the path to the ONNX model file
 #' @param providers Optional character vector specifying execution providers
-#' @param optimize Logical indicating whether to optimize the session for performance
-#' @return An optimized RSession object or NULL if creation fails
+#' @return An RSession object or NULL if creation fails
 #' @export
-safe_onnx_session <- function(model_path, providers = NULL, optimize = TRUE) {
+safe_onnx_session <- function(model_path, providers = NULL) {
   tryCatch({
-    # Create session
     session <- onnx_session(model_path, providers)
-    
-    # Optimize if requested
-    if (optimize) {
-      optimize_session_performance(session)
-    }
-    
     return(session)
   }, error = function(e) {
     warning("Failed to create ONNX session: ", e$message)

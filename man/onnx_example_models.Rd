@@ -2,22 +2,13 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_example_models}
 \alias{onnx_example_models}
-\title{Get Example Model Paths}
+\title{ONNX Example Models}
 \usage{
 onnx_example_models()
 }
 \value{
-A named character vector of model paths
+A named character vector with model names as names and paths as values
 }
 \description{
-Retrieve paths to example ONNX models included in the package.
-}
-\examples{
-\dontrun{
-models <- onnx_example_models()
-print(models)
-
-# Use an example model
-session <- onnx_session(models["kospacing"])
-}
+List available example models bundled with the package.
 }

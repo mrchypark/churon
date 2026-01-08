@@ -2,27 +2,18 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_example_session}
 \alias{onnx_example_session}
-\title{Create Session with Example Model}
+\title{ONNX Example Session}
 \usage{
-onnx_example_session(model_name, providers = NULL)
+onnx_example_session(model_name = "mnist", providers = NULL)
 }
 \arguments{
-\item{model_name}{Character string specifying the example model name}
+\item{model_name}{Character string specifying the model name (default: "mnist")}
 
-\item{providers}{Optional character vector specifying execution providers}
+\item{providers}{Optional execution providers}
 }
 \value{
-An RSession object for running inference
+An RSession object
 }
 \description{
-Convenience function to create a session using an example model.
-}
-\examples{
-\dontrun{
-# Create session with example model
-session <- onnx_example_session("kospacing")
-
-# With specific providers
-session <- onnx_example_session("kospacing", providers = c("cpu"))
-}
+Create a session with an example model.
 }

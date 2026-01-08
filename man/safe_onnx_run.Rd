@@ -2,7 +2,7 @@
 % Please edit documentation in R/onnx_interface.R
 \name{safe_onnx_run}
 \alias{safe_onnx_run}
-\title{Safe ONNX Inference}
+\title{Safe ONNX Run}
 \usage{
 safe_onnx_run(session, inputs, monitor_performance = FALSE)
 }
@@ -14,15 +14,8 @@ safe_onnx_run(session, inputs, monitor_performance = FALSE)
 \item{monitor_performance}{Logical indicating whether to monitor performance}
 }
 \value{
-Inference results or NULL if inference fails
+Result of inference or NULL if failed
 }
 \description{
-Run ONNX inference with automatic error handling and performance monitoring.
-}
-\examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-inputs <- list(input_tensor = matrix(rnorm(10), nrow = 2, ncol = 5))
-results <- safe_onnx_run(session, inputs, monitor_performance = TRUE)
-}
+Run inference with automatic error handling and monitoring.
 }

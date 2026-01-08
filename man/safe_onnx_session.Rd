@@ -4,26 +4,19 @@
 \alias{safe_onnx_session}
 \title{Safe ONNX Session Creation}
 \usage{
-safe_onnx_session(model_path, providers = NULL, optimize = TRUE)
+safe_onnx_session(model_path, providers = NULL)
 }
 \arguments{
 \item{model_path}{Character string specifying the path to the ONNX model file}
 
 \item{providers}{Optional character vector specifying execution providers}
-
-\item{optimize}{Logical indicating whether to optimize the session for performance}
 }
 \value{
-An optimized RSession object or NULL if creation fails
+An RSession object or NULL if creation fails
 }
 \description{
-Create an ONNX session with automatic error handling and optimization.
+Safe ONNX Session Creation
 }
-\examples{
-\dontrun{
-session <- safe_onnx_session("path/to/model.onnx", optimize = TRUE)
-if (!is.null(session)) {
-  # Use the session
-}
-}
+\details{
+Create an ONNX session with automatic error handling.
 }

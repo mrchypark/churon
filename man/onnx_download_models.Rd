@@ -2,33 +2,16 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_download_models}
 \alias{onnx_download_models}
-\title{List Available Models from ONNX Model Zoo}
+\title{ONNX Download Models}
 \usage{
 onnx_download_models(subset = "vision")
 }
 \arguments{
-\item{subset}{Model subset category. Possible values:
-\itemize{
-\item "vision": Computer vision models
-}}
+\item{subset}{Character string specifying the model subset (vision, text, etc.)}
 }
 \value{
-Named character vector of available model names and URLs
-}
+A named character vector of available models
 }
 \description{
-Returns available models from the ONNX Model Zoo that can be downloaded.}
-\note{
-This function returns an empty vector. Models should be downloaded
-directly from the ONNX Model Zoo GitHub repository:
-https://github.com/onnx/models}
-\examples{
-\dontrun{
-# Check available models (returns empty for now)
-models <- onnx_download_models("vision")
-
-# Download directly from ONNX Model Zoo
-model_path <- onnx_download_model("mnist",
-  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
-}
+List available models from the ONNX Model Zoo.
 }

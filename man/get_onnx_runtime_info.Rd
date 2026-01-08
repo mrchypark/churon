@@ -2,25 +2,19 @@
 % Please edit documentation in R/onnx_interface.R, R/zzz.R
 \name{get_onnx_runtime_info}
 \alias{get_onnx_runtime_info}
-\title{Get ONNX Runtime Information}
+\title{Get ONNX Runtime Info}
 \usage{
 get_onnx_runtime_info()
 
 get_onnx_runtime_info()
 }
 \value{
-A list containing ONNX Runtime information
+A list containing runtime information
 
 A list containing ONNX Runtime configuration information
 }
 \description{
-Retrieve information about the ONNX Runtime installation.
+Get information about the ONNX Runtime installation.
 
 This function returns information about the current ONNX Runtime configuration.
-}
-\examples{
-\dontrun{
-info <- get_onnx_runtime_info()
-print(info)
-}
 }

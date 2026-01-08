@@ -13,14 +13,5 @@ find_model_path(model_name)
 Character string with the full path to the model file
 }
 \description{
-Find the full path to a model file, checking both package models and user paths.
-}
-\examples{
-\dontrun{
-# Find package model
-path <- find_model_path("kospacing")
-
-# Find user model (returns as-is if file exists)
-path <- find_model_path("/path/to/my/model.onnx")
-}
+Find the full path to a model file, checking user paths.
 }

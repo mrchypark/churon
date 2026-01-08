@@ -10,15 +10,15 @@ onnx_providers(session)
 \item{session}{An RSession object created by onnx_session()}
 }
 \value{
-A character vector of execution provider names
+A character vector of available execution providers
 }
 \description{
-Retrieve information about execution providers used by the session.
+Get the execution providers available for the session.
 }
 \examples{
 \dontrun{
 session <- onnx_session("path/to/model.onnx")
 providers <- onnx_providers(session)
-print(providers)
+cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
 }
 }

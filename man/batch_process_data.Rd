@@ -2,7 +2,8 @@
 % Please edit documentation in R/onnx_interface.R
 \name{batch_process_data}
 \alias{batch_process_data}
-\title{Batch Process Data}
+\title{Optimize Session Performance
+Batch Process Data}
 \usage{
 batch_process_data(session, data_list, batch_size = 32)
 }
@@ -18,11 +19,4 @@ A list of results from batch processing
 }
 \description{
 Process data in batches for memory efficiency with large datasets.
-}
-\examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-large_dataset <- list(...)  # Your large dataset
-results <- batch_process_data(session, large_dataset, batch_size = 32)
-}
 }

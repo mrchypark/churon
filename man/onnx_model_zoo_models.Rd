@@ -2,27 +2,13 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_model_zoo_models}
 \alias{onnx_model_zoo_models}
-\title{List Available Models from ONNX Model Zoo}
+\title{ONNX Model Zoo Models}
 \usage{
 onnx_model_zoo_models()
 }
 \value{
-Character vector of available model names
-}
+A character vector of available models
 }
 \description{
-Returns available models from the ONNX Model Zoo.}
-\note{
-This function returns an empty vector. Models should be downloaded
-directly from the ONNX Model Zoo GitHub repository:
-https://github.com/onnx/models}
-\examples{
-\dontrun{
-# Check available models (returns empty for now)
-models <- onnx_model_zoo_models()
-
-# Download directly from ONNX Model Zoo
-model_path <- onnx_download_model("mnist",
-  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
-}
+List available models from the ONNX Model Zoo.
 }

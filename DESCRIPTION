@@ -21,7 +21,6 @@ RoxygenNote: 7.3.3
 Config/rextendr/version: 0.3.1
 SystemRequirements: ONNX Runtime (>= 1.13.0)
 Depends: R (>= 4.0.0)
-Imports: methods
 Suggests: 
     knitr,
     rmarkdown,

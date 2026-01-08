@@ -4,9 +4,9 @@
 \name{churon-package}
 \alias{churon}
 \alias{churon-package}
-\title{churon: ONNX Runtime Integration for R with Korean Text Processing}
+\title{churon: ONNX Runtime Integration for R}
 \description{
-Provides R bindings for ONNX Runtime to run machine learning inference with ONNX models. Includes specialized support for Korean text processing models, particularly Korean spacing (kospacing) models. Built with Rust for high performance and memory safety, offering comprehensive error handling and validation.
+Provides R bindings for ONNX Runtime to run machine learning inference with ONNX models. Built with Rust for high performance and memory safety, offering comprehensive error handling and validation. Includes bundled example models (MNIST) for testing.
 }
 \seealso{
 Useful links:
