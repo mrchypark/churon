@@ -59,3 +59,7 @@ Desktop.ini
 
 # 체크 디렉토리들
 ..Rcheck/
+
+# 테스트 모델들 (외부에서 다운로드)
+test_models/
+test_zoo_models/

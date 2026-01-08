@@ -17,11 +17,10 @@ URL: https://github.com/churon-project/churon
 BugReports: https://github.com/churon-project/churon/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
 Config/rextendr/version: 0.3.1
 SystemRequirements: ONNX Runtime (>= 1.13.0)
 Suggests: 
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
-
