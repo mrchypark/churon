@@ -609,11 +609,19 @@ onnx_download_models <- function(subset = "vision") {
 
 #' ONNX Example Models
 #'
-#' List available example models.
+#' List available example models bundled with the package.
 #'
-#' @return A character vector of example model names
+#' @return A named character vector with model names as names and paths as values
 #' @export
 onnx_example_models <- function() {
+  model_dir <- system.file("model", package = "churon")
+  model_files <- list.files(model_dir, pattern = "\\.onnx$", full.names = TRUE)
+
+  if (length(model_files) > 0) {
+    names(model_files) <- basename(model_files)
+    return(model_files)
+  }
+
   return(character(0))
 }
 
@@ -621,12 +629,27 @@ onnx_example_models <- function() {
 #'
 #' Create a session with an example model.
 #'
-#' @param model_name Character string specifying the model name
+#' @param model_name Character string specifying the model name (default: "mnist")
 #' @param providers Optional execution providers
 #' @return An RSession object
 #' @export
 onnx_example_session <- function(model_name = "mnist", providers = NULL) {
-  stop("No example models available. Please download models from ONNX Model Zoo.")
+  models <- onnx_example_models()
+
+  if (length(models) == 0) {
+    stop("No example models available. Please download models from ONNX Model Zoo.")
+  }
+
+  # Find model by name (with or without .onnx extension)
+  model_name_clean <- gsub("\\.onnx$", "", model_name)
+  model_path <- models[grepl(paste0("^", model_name_clean), names(models))]
+
+  if (length(model_path) == 0) {
+    stop("Model '", model_name, "' not found. Available models: ",
+         paste(names(models), collapse = ", "))
+  }
+
+  onnx_session(model_path[1], providers = providers)
 }
 
 #' ONNX Model Zoo Models

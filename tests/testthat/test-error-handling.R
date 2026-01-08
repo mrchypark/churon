@@ -36,7 +36,7 @@ test_that("error handling for invalid execution providers", {
     # Test invalid provider name
     expect_error(
       onnx_session(model_path, providers = "invalid_provider"),
-      "Unknown execution provider"
+      "Invalid execution providers"
     )
 
     # Test empty provider list

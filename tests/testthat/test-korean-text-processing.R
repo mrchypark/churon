@@ -4,9 +4,9 @@ test_that("example models function works", {
 
   models <- onnx_example_models()
 
-  # Should return empty list (no models in package)
+  # Should return available models
   expect_type(models, "character")
-  expect_true(length(models) == 0)
+  expect_true(length(models) >= 1)
 })
 
 test_that("model path finding works", {
