@@ -1,5 +1,6 @@
 test_that("end-to-end workflow with example models", {
   skip_if_not_installed("churon")
+  library(churon)
   
   # Get available example models
   models <- onnx_example_models()
@@ -32,6 +33,7 @@ test_that("end-to-end workflow with example models", {
 
 test_that("convenience functions work correctly", {
   skip_if_not_installed("churon")
+  library(churon)
   
   models <- onnx_example_models()
   
@@ -55,6 +57,7 @@ test_that("convenience functions work correctly", {
 
 test_that("error handling in real scenarios", {
   skip_if_not_installed("churon")
+  library(churon)
   
   # Test with non-existent model
   expect_error(
@@ -87,6 +90,7 @@ test_that("error handling in real scenarios", {
 
 test_that("input validation works correctly", {
   skip_if_not_installed("churon")
+  library(churon)
   
   models <- onnx_example_models()
   
