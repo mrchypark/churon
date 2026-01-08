@@ -10,7 +10,7 @@ churon provides R bindings for ONNX Runtime, enabling high-performance machine l
 - 🚀 **High Performance**: Core logic implemented in Rust for speed
 - 🛡️ **Memory Safety**: Rust's memory safety guarantees
 - 🔧 **Comprehensive Error Handling**: Detailed error messages and validation
-- 🌐 **Multiple Execution Providers**: CUDA, TensorRT, DirectML, OneDNN, CoreML, CPU support
+- 🌐 **Multiple Execution Providers**: CUDA, TensorRT, DirectML, OneDNN, CoreML, CPU support (on supported platforms)
 - 📦 **Bundled Example Models**: MNIST included for testing
 
 ## Installation
@@ -19,7 +19,7 @@ churon provides R bindings for ONNX Runtime, enabling high-performance machine l
 
 - R (>= 4.0.0)
 - Rust (>= 1.70.0)
-- ONNX Runtime (>= 1.13.0) - automatically downloaded
+- macOS ARM64 (Apple Silicon) - current platform
 
 ### Install from GitHub
 
@@ -42,8 +42,6 @@ library(churon)
 # Check available example models
 models <- onnx_example_models()
 print(models)
-# mnist.onnx
-# "/path/to/churon/model/mnist.onnx"
 
 # Create a session with the example MNIST model
 session <- onnx_example_session("mnist")
@@ -89,10 +87,10 @@ outputs <- onnx_run(session, inputs)
 ### Session Management
 
 ```r
-# Create session with specific providers
-session <- onnx_session("model.onnx", providers = c("cuda", "cpu"))
+# Create session with default providers
+session <- onnx_session("model.onnx")
 
-# Get available providers
+# Get available providers (note: may return limited set on current platform)
 providers <- onnx_providers(session)
 cat("Available providers:", paste(providers, collapse = ", "), "\n")
 
@@ -104,7 +102,7 @@ model_path <- onnx_model_path(session)
 
 ```r
 # Safe session creation with automatic error handling
-session <- safe_onnx_session("model.onnx", optimize = TRUE)
+session <- safe_onnx_session("model.onnx")
 
 if (!is.null(session)) {
   # Session created successfully
@@ -146,59 +144,22 @@ result <- safe_onnx_run(session, inputs, monitor_performance = TRUE)
 | `safe_onnx_session()` | Create session with error handling |
 | `safe_onnx_run()` | Run inference with error handling |
 
-## Performance Optimization
-
-```r
-session <- onnx_session("model.onnx")
-
-# Optimize session for performance
-optimize_session_performance(session)
-
-# Warm up the session
-session$warmup()
-
-# Get performance statistics
-stats <- get_session_performance_stats(session)
-
-# Estimate memory usage
-memory <- estimate_session_memory(session)
-```
-
-## Batch Processing
-
-```r
-# Process large datasets in batches
-session <- onnx_session("model.onnx")
-data_list <- list(batch1, batch2, batch3, ...)  # Your data batches
-
-results <- batch_process_data(session, data_list, batch_size = 32)
-```
-
 ## Current Status
 
 ### ✅ Fully Working Features
 
 - ONNX model loading and session management
 - Model metadata extraction and querying
-- Complete tensor conversion and inference execution
-- Multiple execution provider support
-- Comprehensive error handling
-- Utility functions
+- Tensor conversion (f32, f64 support)
+- Inference execution with multiple execution providers
+- Comprehensive error handling and validation
+- Bundled MNIST model for testing
 
 ### ⚠️ Limitations
 
-- **Tensor Types**: Currently supports f32 (float32) numeric tensors
-- **Performance**: Basic optimization applied, advanced features limited
-- **Documentation**: Some function documentation may be incomplete
-
-## Development Roadmap
-
-- [x] ONNX tensor conversion logic
-- [x] Actual inference execution
-- [x] Bundled example models (MNIST)
-- [ ] Additional tensor type support (int64, etc.)
-- [ ] Advanced performance optimization
-- [ ] Comprehensive documentation
+- **Platform Support**: Currently optimized for macOS ARM64
+- **Execution Providers**: Some providers (CUDA, TensorRT) require additional system libraries
+- **Performance Features**: Advanced optimization features pending implementation
 
 ## Contributing
 

@@ -30,9 +30,6 @@ test_that("exported functions are available", {
     "check_onnx_runtime_available",
     "safe_onnx_session",
     "safe_onnx_run",
-    "optimize_session_performance",
-    "get_session_performance_stats",
-    "estimate_session_memory",
     "batch_process_data"
   )
 

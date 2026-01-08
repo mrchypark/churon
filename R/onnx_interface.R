@@ -374,87 +374,6 @@ check_onnx_runtime_available <- function() {
 }
 
 #' Optimize Session Performance
-#'
-#' Optimize an ONNX session for better performance.
-#'
-#' @param session An RSession object created by onnx_session()
-#' @return The optimized session (invisibly)
-#' @export
-optimize_session_performance <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
-  
-  tryCatch({
-    # Configure session for performance
-    session$configure_for_performance()
-    
-    # Warm up the session
-    session$warmup()
-    
-    message("Session optimized for performance")
-    invisible(session)
-  }, error = function(e) {
-    warning("Failed to optimize session performance: ", e$message)
-    invisible(session)
-  })
-}
-
-#' Get Session Performance Statistics
-#'
-#' Get performance statistics for a session.
-#'
-#' @param session An RSession object created by onnx_session()
-#' @return A list containing performance statistics
-#' @export
-get_session_performance_stats <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
-  
-  tryCatch({
-    result <- session$get_performance_stats()
-    return(result)
-  }, error = function(e) {
-    stop("Failed to retrieve performance statistics: ", e$message)
-  })
-}
-
-#' Estimate Session Memory Usage
-#'
-#' Estimate the memory usage of an ONNX session.
-#'
-#' @param session An RSession object created by onnx_session()
-#' @return Estimated memory usage in bytes
-#' @export
-estimate_session_memory <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
-  
-  tryCatch({
-    result <- session$estimate_memory_usage()
-    return(result)
-  }, error = function(e) {
-    stop("Failed to estimate memory usage: ", e$message)
-  })
-}
-
 #' Batch Process Data
 #'
 #' Process data in batches for memory efficiency with large datasets.
@@ -469,22 +388,22 @@ batch_process_data <- function(session, data_list, batch_size = 32) {
   if (missing(session) || is.null(session)) {
     stop("session is required and cannot be NULL")
   }
-  
+
   if (missing(data_list) || !is.list(data_list)) {
     stop("data_list must be a list of input data")
   }
-  
+
   if (!is.numeric(batch_size) || batch_size <= 0) {
     stop("batch_size must be a positive number")
   }
-  
+
   results <- list()
   total_items <- length(data_list)
-  
+
   for (i in seq(1, total_items, by = batch_size)) {
     end_idx <- min(i + batch_size - 1, total_items)
     batch_data <- data_list[i:end_idx]
-    
+
     batch_results <- lapply(batch_data, function(item) {
       tryCatch({
         onnx_run(session, item)
@@ -493,9 +412,9 @@ batch_process_data <- function(session, data_list, batch_size = 32) {
         return(NULL)
       })
     })
-    
+
     results <- c(results, batch_results)
-    
+
     # Progress reporting
     if (interactive()) {
       progress <- round((end_idx / total_items) * 100, 1)
@@ -503,7 +422,7 @@ batch_process_data <- function(session, data_list, batch_size = 32) {
       if (end_idx == total_items) cat("\n")
     }
   }
-  
+
   return(results)
 }
 
