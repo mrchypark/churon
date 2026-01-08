@@ -10,7 +10,7 @@ name = 'churon'
 [dependencies]
 extendr-api = { version = "0.4.0", features = ["ndarray"] }
 ndarray = "0.15.6"
-ort = { version = "1.16.3", default-features = false, features = ["load-dynamic", "copy-dylibs"] }
+ort = { version = "2.0.0-rc.11", default-features = false, features = ["load-dynamic", "copy-dylibs"] }
 
 [features]
 default = []
