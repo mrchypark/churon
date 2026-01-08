@@ -87,7 +87,43 @@ if (check_onnx_runtime_available()) {
 }
 ```
 
-## API 참조
+### 다른 ONNX 모델 사용하기
+
+churon은 любые ONNX Runtime과 호환되는 모든 ONNX 모델을 지원합니다.
+
+```r
+library(churon)
+
+# ONNX Model Zoo에서 모델 다운로드
+download_model <- function(name, url) {
+  dest <- paste0(name, ".onnx")
+  if (!file.exists(dest)) {
+    download.file(url, dest, mode = "wb")
+  }
+  return(dest)
+}
+
+# MNIST (손글씨 숫자 인식)
+mnist_path <- download_model("mnist",
+  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
+
+# 세션 생성 및 추론
+session <- onnx_session(mnist_path)
+
+# 입력 정보 확인
+input_info <- onnx_input_info(session)
+input_name <- input_info[[1]]$get_name()
+input_shape <- input_info[[1]]$get_shape()
+
+# MNIST: 1 x 1 x 28 x 28 입력
+input_data <- array(rnorm(prod(input_shape)), dim = input_shape)
+result <- onnx_run(session, setNames(list(input_data), input_name))
+
+# 결과 확인
+cat("예측 숫자:", which.max(result[[1]]) - 1, "\n")
+```
+
+## 지원하는 모델 유형
 
 ### 핵심 함수
 
