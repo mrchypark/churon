@@ -56,24 +56,26 @@ test_that("error handling for inference failures", {
   skip_if_not_installed("churon")
   library(churon)
 
-  # Test with no input data - requires valid session first
-  # Since we don't have bundled models, skip this test
-  skip("No bundled models available for session creation")
+  model_dir <- system.file("model", package = "churon")
+  model_files <- list.files(model_dir, pattern = "\\.onnx$", full.names = TRUE)
 
-  # Original test code (would work with a valid session):
-  # expect_error(
-  #   onnx_run(list()),
-  #   "inputs cannot be empty"
-  # )
+  if (length(model_files) > 0) {
+    session <- onnx_session(model_files[1])
 
-  # Test with unnamed input data (list without names)
-  # expect_error(
-  #   onnx_run(list(matrix(1:4, 2, 2))),
-  #   "All inputs must be named"
-  # )
+    # Test with no input data
+    expect_error(
+      onnx_run(session, list()),
+      "inputs cannot be empty"
+    )
 
-  # For now, just test basic error handling
-  expect_true(TRUE) # Placeholder until actual model inference is implemented
+    # Test with unnamed input data (list without names)
+    expect_error(
+      onnx_run(session, list(matrix(1:4, 2, 2))),
+      "All inputs must be named"
+    )
+  } else {
+    skip("No ONNX model files found for testing")
+  }
 })
 
 test_that("error messages are informative", {
