@@ -1,6 +1,6 @@
 Package: churon
-Title: ONNX Runtime Integration for R with Korean Text Processing
-Version: 0.0.0.9000
+Title: ONNX Runtime Integration for R
+Version: 0.0.1
 Author: Chanyub Park [aut, cre] (<https://orcid.org/0000-0001-6474-2570>)
 Maintainer: Chanyub Park <mrchypark@gmail.com>
 Authors@R: person(given = "Chanyub",
@@ -9,9 +9,9 @@ Authors@R: person(given = "Chanyub",
            email = "mrchypark@gmail.com",
            comment = c(ORCID = "0000-0001-6474-2570"))
 Description: Provides R bindings for ONNX Runtime to run machine learning inference
-    with ONNX models. Includes specialized support for Korean text processing models,
-    particularly Korean spacing (kospacing) models. Built with Rust for high performance
-    and memory safety, offering comprehensive error handling and validation.
+    with ONNX models. Built with Rust for high performance and memory safety,
+    offering comprehensive error handling and validation. Includes bundled
+    example models (MNIST) for testing.
 License: MIT + file LICENSE
 URL: https://github.com/churon-project/churon
 BugReports: https://github.com/churon-project/churon/issues
