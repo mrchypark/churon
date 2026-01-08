@@ -9,7 +9,7 @@
 #' @docType package
 #' @usage NULL
 #' @useDynLib churon, .registration = TRUE
-NULL
+"_PACKAGE"
 
 RSession <- new.env(parent = emptyenv())
 

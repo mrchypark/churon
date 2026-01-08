@@ -1,7 +1,9 @@
 #' S3 Methods for TensorInfo and RSession
 #'
 #' These methods provide convenient access to object properties.
-
+#'
+#' @param x A TensorInfo or RSession object
+#' @param name Property name to access
 #' @export
 `$.TensorInfo` <- function(x, name) {
   if (name == "name") {
