@@ -2,32 +2,29 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_download_model}
 \alias{onnx_download_model}
-\title{ONNX Model Zoo에서 모델 다운로드}
+\title{Download Model from ONNX Model Zoo}
 \usage{
-onnx_download_model(model_name, dest_dir = ".", overwrite = FALSE)
+onnx_download_model(name, url)
 }
 \arguments{
-\item{model_name}{모델 이름 (onnx_model_zoo_models()에서 반환된 이름)}
+\item{name}{Model name for the downloaded file}
 
-\item{dest_dir}{다운로드 디렉토리 (기본값: 현재 디렉토리)}
-
-\item{overwrite}{기존 파일 덮어쓰기 (기본값: FALSE)}
+\item{url}{URL to download the model from}
 }
 \value{
-다운로드된 모델 파일 경로
+Character string with the path to the downloaded model file
+}
 }
 \description{
-ONNX Model Zoo에서 모델을 다운로드합니다.
-}
+Download a model from the ONNX Model Zoo.}
 \examples{
 \dontrun{
-# MNIST 모델 다운로드
-model_path <- onnx_download_model("mnist")
+# Download MNIST model
+model_path <- onnx_download_model("mnist",
+  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
 
-# 특정 디렉토리에 다운로드
-model_path <- onnx_download_model("squeezenet1.0", dest_dir = "models/")
-
-# 덮어쓰기
-model_path <- onnx_download_model("mnist", overwrite = TRUE)
+# Download SqueezeNet
+model_path <- onnx_download_model("squeezenet1.0",
+  "https://github.com/onnx/models/raw/main/validated/vision/classification/squeezenet/model/squeezenet1.0-8.onnx")
 }
 }

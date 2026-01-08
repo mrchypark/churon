@@ -2,26 +2,33 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_download_models}
 \alias{onnx_download_models}
-\title{배치로 여러 모델 다운로드}
+\title{List Available Models from ONNX Model Zoo}
 \usage{
-onnx_download_models(model_names, dest_dir = ".", overwrite = FALSE)
+onnx_download_models(subset = "vision")
 }
 \arguments{
-\item{model_names}{모델 이름들의 벡터}
-
-\item{dest_dir}{다운로드 디렉토리}
-
-\item{overwrite}{기존 파일 덮어쓰기}
+\item{subset}{Model subset category. Possible values:
+\itemize{
+\item "vision": Computer vision models
+}}
 }
 \value{
-다운로드된 파일 경로들의 리스트
+Named character vector of available model names and URLs
+}
 }
 \description{
-ONNX Model Zoo에서 여러 모델을 배치로 다운로드합니다.
-}
+Returns available models from the ONNX Model Zoo that can be downloaded.}
+\note{
+This function returns an empty vector. Models should be downloaded
+directly from the ONNX Model Zoo GitHub repository:
+https://github.com/onnx/models}
 \examples{
 \dontrun{
-# 여러 모델 다운로드
-paths <- onnx_download_models(c("mnist", "squeezenet1.0"))
+# Check available models (returns empty for now)
+models <- onnx_download_models("vision")
+
+# Download directly from ONNX Model Zoo
+model_path <- onnx_download_model("mnist",
+  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
 }
 }

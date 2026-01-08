@@ -2,32 +2,27 @@
 % Please edit documentation in R/onnx_interface.R
 \name{onnx_model_zoo_models}
 \alias{onnx_model_zoo_models}
-\title{ONNX Model Zoo 모델 정보}
+\title{List Available Models from ONNX Model Zoo}
 \usage{
-onnx_model_zoo_models(category = "all")
-}
-\arguments{
-\item{category}{모델 카테고리. 가능한 값:
-\itemize{
-\item "all": 모든 모델 (기본값)
-\item "vision": 컴퓨터 비전 모델
-\item "language": 언어 처리 모델
-\item "other": 기타 모델
-}}
+onnx_model_zoo_models()
 }
 \value{
-데이터 프레임 with 모델 정보 (name, url, category, description, input_shape)
+Character vector of available model names
+}
 }
 \description{
-ONNX Model Zoo에서 사용 가능한 모델들의 정보를 반환합니다.
-}
+Returns available models from the ONNX Model Zoo.}
+\note{
+This function returns an empty vector. Models should be downloaded
+directly from the ONNX Model Zoo GitHub repository:
+https://github.com/onnx/models}
 \examples{
 \dontrun{
-# 모든 모델 리스트
+# Check available models (returns empty for now)
 models <- onnx_model_zoo_models()
-print(models)
 
-# 비전 모델만
-vision_models <- onnx_model_zoo_models("vision")
+# Download directly from ONNX Model Zoo
+model_path <- onnx_download_model("mnist",
+  "https://github.com/onnx/models/raw/main/validated/vision/classification/mnist/model/mnist-8.onnx")
 }
 }
