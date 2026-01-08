@@ -30,7 +30,12 @@ ORT_VERSION="1.23.0"
 
 # Set platform-specific variables
 if [ "$PLATFORM" = "linux" ]; then
-    ORT_ARCHIVE="onnxruntime-linux-$ARCH-$ORT_VERSION.tgz"
+    # Linux uses aarch64 naming, not arm64
+    if [ "$ARCH" = "arm64" ]; then
+        ORT_ARCHIVE="onnxruntime-linux-aarch64-$ORT_VERSION.tgz"
+    else
+        ORT_ARCHIVE="onnxruntime-linux-$ARCH-$ORT_VERSION.tgz"
+    fi
     ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v$ORT_VERSION/$ORT_ARCHIVE"
     ORT_LIB_NAME="libonnxruntime.so"
 elif [ "$PLATFORM" = "osx" ]; then
