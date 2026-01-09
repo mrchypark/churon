@@ -45,6 +45,9 @@ jobs:
 
       - name: Upload check results
         if: always()
-        uses: r-lib/actions/upload-rcheck@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.os }}-r${{ matrix.r }}
+          name: ${{ matrix.os }}-r${{ matrix.r }}-check
+          path: |
+            *.Rcheck/
+          retention-days: 30
