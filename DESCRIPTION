@@ -1,6 +1,6 @@
 Package: churon
 Title: ONNX Runtime Integration for R
- Version: 0.1.3
+Version: 0.1.3
 Author: Chanyub Park [aut, cre] (<https://orcid.org/0000-0001-6474-2570>)
 Maintainer: Chanyub Park <mrchypark@gmail.com>
 Authors@R: person(given = "Chanyub",
@@ -16,8 +16,8 @@ Description: Provides high-performance R bindings for ONNX Runtime, enabling
     immediate testing and prototyping. Designed for production use with support for
     macOS (ARM64/x64), Linux (x64/aarch64), and Windows (x64).
 License: MIT + file LICENSE
- URL: https://github.com/mrchypark/churon
- BugReports: https://github.com/mrchypark/churon/issues
+URL: https://github.com/mrchypark/churon
+BugReports: https://github.com/mrchypark/churon/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
