@@ -8,11 +8,13 @@ Authors@R: person(given = "Chanyub",
            role = c("aut","cre"),
            email = "mrchypark@gmail.com",
            comment = c(ORCID = "0000-0001-6474-2570"))
-Description: Provides R bindings for ONNX Runtime to run machine learning inference
-    with ONNX models. Built with Rust for high performance and memory safety,
-    offering comprehensive error handling and validation. Includes bundled
-    example models (MNIST) for testing. Supports macOS (ARM64/x64),
-    Linux (x64/aarch64), and Windows (x64).
+Description: Provides high-performance R bindings for ONNX Runtime, enabling
+    efficient machine learning model inference. Written in Rust for memory safety
+    and speed, the package supports cross-platform model execution with multiple
+    execution providers (CPU, CUDA, CoreML, OneDNN). Includes comprehensive
+    error handling and validation, with bundled MNIST example model for
+    immediate testing and prototyping. Designed for production use with support for
+    macOS (ARM64/x64), Linux (x64/aarch64), and Windows (x64).
 License: MIT + file LICENSE
 URL: https://github.com/churon-project/churon
 BugReports: https://github.com/churon-project/churon/issues
@@ -20,7 +22,7 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Config/rextendr/version: 0.3.1
-SystemRequirements: ONNX Runtime (>= 1.13.0)
+SystemRequirements: ONNX Runtime (>= 1.13.0), Rust toolchain
 Depends: R (>= 4.0.0)
 Suggests: 
     knitr,
