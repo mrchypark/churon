@@ -15,4 +15,3 @@
 ^final_test_report\.R$
 ^DEPLOYMENT_SUMMARY\.md$
 ^\.github$
-^codecov\.yml$
