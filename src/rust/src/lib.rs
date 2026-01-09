@@ -6,6 +6,9 @@ use ort::value::{Tensor, Value};
 use std::collections::HashMap;
 use std::fmt;
 use std::path::Path;
+use std::sync::Once;
+
+static ORT_INIT: Once = Once::new();
 
 #[derive(Debug, Clone)]
 #[extendr]
@@ -395,7 +398,11 @@ impl RSession {
         path: &str,
         providers: Option<Vec<String>>,
     ) -> extendr_api::Result<Self> {
-        ort::init().commit();
+        // Use Once to ensure ort initialization happens only once
+        // This prevents mutex poisoning when called concurrently
+        ORT_INIT.call_once(|| {
+            ort::init().commit();
+        });
         let execution_providers = Self::get_execution_providers(providers)?;
         let session = Session::builder()
             .map_err(|e| {
