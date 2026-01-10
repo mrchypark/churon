@@ -27,6 +27,8 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
+      ORT_VERSION: 1.23.0
+      RUNNER_OS: ${{ runner.os }}
 
     steps:
       - uses: actions/checkout@v4
@@ -42,25 +44,25 @@ jobs:
         shell: bash
         run: |
           # Install ONNX Runtime for the current platform
-          echo "Installing ONNX Runtime for ${{ runner.os }}..."
+          echo "Installing ONNX Runtime for ${RUNNER_OS}..."
 
-          ORT_VERSION="1.23.0"
+          ORT_VERSION="${{ env.ORT_VERSION }}"
+          RUNNER_OS="${{ env.RUNNER_OS }}"
+          ARCH=$(uname -m)
 
-          if [[ "${{ runner.os }}" == "Linux" ]]; then
-            ARCH=$(uname -m)
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
             if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
               ORT_ARCHIVE="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"
             else
               ORT_ARCHIVE="onnxruntime-linux-x64-${ORT_VERSION}.tgz"
             fi
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
-            ARCH=$(uname -m)
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
             if [[ "$ARCH" == "arm64" ]]; then
               ORT_ARCHIVE="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"
             else
               ORT_ARCHIVE="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz"
             fi
-          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+          elif [[ "$RUNNER_OS" == "Windows" ]]; then
             ORT_ARCHIVE="onnxruntime-win-x64-${ORT_VERSION}.zip"
           fi
 
@@ -72,19 +74,18 @@ jobs:
 
           cd inst/onnxruntime
 
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
             curl -L -o ort.zip "$ORT_URL"
             unzip -q ort.zip
-            # Rename directory to expected location
+            # Move files from extracted directory
             shopt -s extglob
-            rm -rf ort.zip
-            # Move files from the extracted onnxruntime-* directory
             for d in onnxruntime-*/; do
               if [ -d "$d" ]; then
                 mv "$d"* . 2>/dev/null || true
                 rmdir "$d" 2>/dev/null || true
               fi
             done
+            rm -f ort.zip
           else
             curl -L -o ort.tgz "$ORT_URL"
             tar xzf ort.tgz
@@ -102,9 +103,11 @@ jobs:
           # Set environment variables for ONNX Runtime
           # This ensures we use our downloaded library, not system libraries
 
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
+          RUNNER_OS="${{ env.RUNNER_OS }}"
+
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
             ORT_LIB="onnxruntime.dll"
-          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+          elif [[ "$RUNNER_OS" == "macOS" ]]; then
             ORT_LIB="libonnxruntime.dylib"
           else
             ORT_LIB="libonnxruntime.so"
