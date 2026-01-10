@@ -406,21 +406,29 @@ impl RSession {
                 .ok()
                 .filter(|p| !p.is_empty());
 
-            // ort::init() returns EnvironmentBuilder, ort::init_from() returns Result
-            let init_result = if let Some(path) = dylib_path {
-                ort::init_from(path)
-            } else {
-                Ok(ort::init())
-            };
+            // Initialize ONNX Runtime with panic recovery
+            // ort::init_from() may panic if library is invalid, so we catch it
+            let init_result = std::panic::catch_unwind(|| {
+                if let Some(path) = dylib_path {
+                    ort::init_from(path)
+                } else {
+                    Ok(ort::init())
+                }
+            });
 
             // Log any initialization errors but don't panic
             // Let R handle the "not installed" case gracefully
-            if let Err(ref e) = init_result {
-                eprintln!("Warning: ONNX Runtime initialization: {}", e);
+            match init_result {
+                Ok(Ok(env)) => {
+                    let _ = env.commit();
+                }
+                Ok(Err(e)) => {
+                    eprintln!("Warning: ONNX Runtime initialization failed: {}", e);
+                }
+                Err(_) => {
+                    eprintln!("Warning: ONNX Runtime initialization panicked (possible corrupted library)");
+                }
             }
-
-            // Commit the result (may fail if library not found, but session creation will fail later)
-            let _ = init_result.map(|env| env.commit());
         });
         let execution_providers = Self::get_execution_providers(providers)?;
         let session = Session::builder()
