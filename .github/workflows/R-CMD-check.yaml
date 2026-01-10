@@ -68,18 +68,20 @@ jobs:
           ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ARCHIVE}"
 
           echo "Downloading ${ORT_URL}..."
-          mkdir -p inst/onnxruntime
           cd inst/onnxruntime
+
+          # Remove old extraction if exists
+          rm -rf onnxruntime-*
 
           # Download and extract
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             curl -L -o ort.zip "$ORT_URL"
             unzip -q ort.zip
-            # Move files from extracted directory to current directory
+            # Move files from extracted directory
             for d in onnxruntime-*/; do
               if [ -d "$d" ]; then
-                mv "$d"/* . 2>/dev/null || true
-                rmdir "$d" 2>/dev/null || true
+                cp -r "$d"/* . 2>/dev/null || true
+                rm -rf "$d"
               fi
             done
             rm -f ort.zip
@@ -87,11 +89,11 @@ jobs:
             curl -L -o ort.tgz "$ORT_URL"
             tar xzf ort.tgz
             rm ort.tgz
-            # ONNX Runtime extracts to a subdirectory, move contents up
+            # Move files from extracted directory
             for d in onnxruntime-*/; do
               if [ -d "$d" ]; then
-                mv "$d"/* . 2>/dev/null || true
-                rmdir "$d" 2>/dev/null || true
+                cp -r "$d"/* . 2>/dev/null || true
+                rm -rf "$d"
               fi
             done
           fi
@@ -100,9 +102,7 @@ jobs:
 
           echo "ONNX Runtime installed to inst/onnxruntime/"
           echo "Contents of lib directory:"
-          ls -la inst/onnxruntime/lib/ 2>/dev/null || echo "No lib directory found"
-          echo "All contents:"
-          find inst/onnxruntime -maxdepth 2 -type f 2>/dev/null | head -20
+          ls -la inst/onnxruntime/lib/ || echo "No lib directory found"
 
       - name: Set ONNX Runtime Environment
         shell: bash
