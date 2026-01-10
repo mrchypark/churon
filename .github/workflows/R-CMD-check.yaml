@@ -130,10 +130,9 @@ jobs:
             ls -la "${{ github.workspace }}/inst/onnxruntime/lib/" || echo "lib directory empty"
           fi
 
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::rcmdcheck
-          needs: check
+      - name: Install R Dependencies
+        run: |
+          Rscript -e "if (!require('rcmdcheck', quietly = TRUE)) install.packages('rcmdcheck', repos='https://cloud.r-project.org', lib=.libPaths()[1])"
 
       - uses: r-lib/actions/check-r-package@v2
         with:
