@@ -75,8 +75,16 @@ jobs:
           if [[ "${{ runner.os }}" == "Windows" ]]; then
             curl -L -o ort.zip "$ORT_URL"
             unzip -q ort.zip
-            mv onnxruntime-*/* . 2>/dev/null || true
-            rm -rf onnxruntime-* ort.zip
+            # Rename directory to expected location
+            shopt -s extglob
+            rm -rf ort.zip
+            # Move files from the extracted onnxruntime-* directory
+            for d in onnxruntime-*/; do
+              if [ -d "$d" ]; then
+                mv "$d"* . 2>/dev/null || true
+                rmdir "$d" 2>/dev/null || true
+              fi
+            done
           else
             curl -L -o ort.tgz "$ORT_URL"
             tar xzf ort.tgz
@@ -87,27 +95,30 @@ jobs:
 
           echo "ONNX Runtime installed to inst/onnxruntime/"
           ls -la inst/onnxruntime/lib/ 2>/dev/null || echo "No lib directory found"
-          ls -la inst/onnxruntime/include/ 2>/dev/null || echo "No include directory found"
 
-      - name: Configure and Build
-        shell: Rscript {0}
+      - name: Set ONNX Runtime Environment
+        shell: bash
         run: |
           # Set environment variables for ONNX Runtime
-          ort_lib <- if (.Platform$OS.type == "windows") {
-            "onnxruntime.dll"
-          } else if (grepl("darwin", R.version$platform)) {
-            "libonnxruntime.dylib"
-          } else {
-            "libonnxruntime.so"
-          }
+          # This ensures we use our downloaded library, not system libraries
 
-          ort_path <- file.path("inst", "onnxruntime", "lib", ort_lib)
-          if (file.exists(ort_path)) {
-            Sys.setenv(ORT_DYLIB_PATH = normalizePath(ort_path))
-            cat("ORT_DYLIB_PATH set to:", ort_path, "\n")
-          } else {
-            cat("Warning: ONNX Runtime library not found at", ort_path, "\n")
-          }
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            ORT_LIB="onnxruntime.dll"
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            ORT_LIB="libonnxruntime.dylib"
+          else
+            ORT_LIB="libonnxruntime.so"
+          fi
+
+          ORT_PATH="${{ github.workspace }}/inst/onnxruntime/lib/${ORT_LIB}"
+
+          if [ -f "$ORT_PATH" ]; then
+            echo "ORT_DYLIB_PATH=$ORT_PATH" >> $GITHUB_ENV
+            echo "ONNX Runtime library: $ORT_PATH"
+          else
+            echo "Warning: ONNX Runtime library not found at $ORT_PATH"
+            ls -la "${{ github.workspace }}/inst/onnxruntime/lib/" || echo "lib directory empty"
+          fi
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
