@@ -401,7 +401,26 @@ impl RSession {
         // Use Once to ensure ort initialization happens only once
         // This prevents mutex poisoning when called concurrently
         ORT_INIT.call_once(|| {
-            ort::init().commit();
+            // Try to get ORT_DYLIB_PATH from environment
+            let dylib_path = std::env::var("ORT_DYLIB_PATH")
+                .ok()
+                .filter(|p| !p.is_empty());
+
+            // ort::init() returns EnvironmentBuilder, ort::init_from() returns Result
+            let init_result = if let Some(path) = dylib_path {
+                ort::init_from(path)
+            } else {
+                Ok(ort::init())
+            };
+
+            // Log any initialization errors but don't panic
+            // Let R handle the "not installed" case gracefully
+            if let Err(ref e) = init_result {
+                eprintln!("Warning: ONNX Runtime initialization: {}", e);
+            }
+
+            // Commit the result (may fail if library not found, but session creation will fail later)
+            let _ = init_result.map(|env| env.commit());
         });
         let execution_providers = Self::get_execution_providers(providers)?;
         let session = Session::builder()
