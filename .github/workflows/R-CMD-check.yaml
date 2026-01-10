@@ -31,13 +31,83 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: r-lib/actions/setup-pandoc@v2
-
-      - uses: r-lib/actions/setup-r@v2
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
         with:
           r-version: ${{ matrix.config.r }}
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
+
+      - name: Install ONNX Runtime
+        shell: bash
+        run: |
+          # Install ONNX Runtime for the current platform
+          echo "Installing ONNX Runtime for ${{ runner.os }}..."
+
+          ORT_VERSION="1.23.0"
+
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            ARCH=$(uname -m)
+            if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
+              ORT_ARCHIVE="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"
+            else
+              ORT_ARCHIVE="onnxruntime-linux-x64-${ORT_VERSION}.tgz"
+            fi
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            ARCH=$(uname -m)
+            if [[ "$ARCH" == "arm64" ]]; then
+              ORT_ARCHIVE="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"
+            else
+              ORT_ARCHIVE="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz"
+            fi
+          elif [[ "${{ runner.os }}" == "Windows" ]]; then
+            ORT_ARCHIVE="onnxruntime-win-x64-${ORT_VERSION}.zip"
+          fi
+
+          ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ARCHIVE}"
+
+          echo "Downloading ${ORT_URL}..."
+          mkdir -p inst/onnxruntime/lib
+          mkdir -p inst/onnxruntime/include
+
+          cd inst/onnxruntime
+
+          if [[ "${{ runner.os }}" == "Windows" ]]; then
+            curl -L -o ort.zip "$ORT_URL"
+            unzip -q ort.zip
+            mv onnxruntime-*/* . 2>/dev/null || true
+            rm -rf onnxruntime-* ort.zip
+          else
+            curl -L -o ort.tgz "$ORT_URL"
+            tar xzf ort.tgz
+            rm ort.tgz
+          fi
+
+          cd ../..
+
+          echo "ONNX Runtime installed to inst/onnxruntime/"
+          ls -la inst/onnxruntime/lib/ 2>/dev/null || echo "No lib directory found"
+          ls -la inst/onnxruntime/include/ 2>/dev/null || echo "No include directory found"
+
+      - name: Configure and Build
+        shell: Rscript {0}
+        run: |
+          # Set environment variables for ONNX Runtime
+          ort_lib <- if (.Platform$OS.type == "windows") {
+            "onnxruntime.dll"
+          } else if (grepl("darwin", R.version$platform)) {
+            "libonnxruntime.dylib"
+          } else {
+            "libonnxruntime.so"
+          }
+
+          ort_path <- file.path("inst", "onnxruntime", "lib", ort_lib)
+          if (file.exists(ort_path)) {
+            Sys.setenv(ORT_DYLIB_PATH = normalizePath(ort_path))
+            cat("ORT_DYLIB_PATH set to:", ort_path, "\n")
+          } else {
+            cat("Warning: ONNX Runtime library not found at", ort_path, "\n")
+          }
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
@@ -47,12 +117,3 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
-
-      - name: Upload check results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.config.os }}-r${{ matrix.config.r }}-check
-          path: |
-            *.Rcheck/
-          retention-days: 30
