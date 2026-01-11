@@ -38,6 +38,9 @@ setup_onnx_runtime <- function() {
 
   # Set environment variable for ONNX Runtime
   Sys.setenv(ORT_DYLIB_PATH = normalizePath(lib_path))
+  
+  # Log for debugging (useful for CI/r-universe)
+  packageStartupMessage("ChurOn: Setup ONNX Runtime at ", normalizePath(lib_path))
 
   # Also set library path for dynamic loading
   lib_dir <- dirname(lib_path)

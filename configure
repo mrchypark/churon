@@ -10,6 +10,15 @@ echo "Configuring churon package..."
 # Detect platform
 PLATFORM=""
 ARCH=""
+
+# Check for Emscripten/WASM build
+if echo "$CC" | grep -q "emcc"; then
+    echo "WASM/Emscripten build detected. Skipping ONNX Runtime download."
+    # Create empty config to satisfy Makevars
+    touch src/ort_config.env
+    exit 0
+fi
+
 case "$(uname -s)" in
     Linux*)     PLATFORM="linux";;
     Darwin*)    PLATFORM="osx";;

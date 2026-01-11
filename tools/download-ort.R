@@ -22,6 +22,11 @@ download_onnx_runtime <- function() {
   )
   
   # Normalize architecture names
+  if (arch == "wasm32" || platform == "Emscripten") {
+    cat("WASM/Emscripten detected. Skipping ONNX Runtime download (handled by web runtime).\n")
+    return(NULL)
+  }
+
   arch_name <- switch(arch,
     "x86_64" = "x64",
     "x86-64" = "x64",
