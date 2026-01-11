@@ -102,8 +102,11 @@ pub struct RSession {
 
 #[extendr]
 impl RSession {
-    pub fn from_path(path: &str) -> extendr_api::Result<Self> {
-        Self::from_path_with_providers_internal(path, None)
+    pub fn from_path(path: &str) -> Self {
+        match Self::from_path_with_providers_internal(path, None) {
+            Ok(x) => x,
+            Err(e) => panic!("{}", e),
+        }
     }
 
     pub fn check_input(&self) {
@@ -555,7 +558,7 @@ pub struct DataConverter;
 
 impl DataConverter {
     pub fn r_to_ndarray_f32(r_data: Doubles, shape: &[usize]) -> ChurOnResult<ArrayD<f32>> {
-        let data: Vec<f32> = r_data.iter().map(|x| x.0 as f32).collect();
+        let data: Vec<f32> = r_data.iter().map(|x| x.inner() as f32).collect();
         let total_elements: usize = shape.iter().product();
         if data.len() != total_elements {
             return Err(ChurOnError::DataConversion(format!(
@@ -575,7 +578,7 @@ impl DataConverter {
     ) -> ChurOnResult<ArrayD<f32>> {
         // Get dimensions from R object
         let actual_shape: Vec<usize> = if let Some(dims) = robj.dim() {
-            dims.iter().map(|d| d.0 as usize).collect()
+            dims.iter().map(|d| d.inner() as usize).collect()
         } else {
             vec![robj.len()]
         };
@@ -614,7 +617,7 @@ impl DataConverter {
     }
 
     pub fn r_to_ndarray_f64(r_data: Doubles, shape: &[usize]) -> ChurOnResult<ArrayD<f64>> {
-        let data: Vec<f64> = r_data.iter().map(|x| x.0 as f64).collect();
+        let data: Vec<f64> = r_data.iter().map(|x| x.inner() as f64).collect();
         let total_elements: usize = shape.iter().product();
         if data.len() != total_elements {
             return Err(ChurOnError::DataConversion(format!(

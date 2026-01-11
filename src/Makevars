@@ -13,6 +13,8 @@ $(SHLIB): $(STATLIB)
 CARGOTMP = $(CURDIR)/.cargo
 
 $(STATLIB):
+	# Check rustc version
+	rustc --version
 	# Load ONNX Runtime environment variables
 	if [ -f "ort_config.env" ]; then \
 		. ./ort_config.env; \

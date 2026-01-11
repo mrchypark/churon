@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Configure script for churon package
 # This script sets up ONNX Runtime for the package build

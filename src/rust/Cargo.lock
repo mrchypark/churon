@@ -25,32 +25,22 @@ dependencies = [
 
 [[package]]
 name = "extendr-api"
-version = "0.4.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1e36d66fa307948c291a6fc5b09d8295dd58e88ab5e8d782d30e23670113e9ab"
+checksum = "67505d96c7faa49d20e749dba7ba2447db52c40a788fd88cc2b6bef02c02277a"
 dependencies = [
- "extendr-engine",
  "extendr-macros",
- "lazy_static",
  "libR-sys",
  "ndarray 0.15.6",
+ "once_cell",
  "paste",
 ]
 
 [[package]]
-name = "extendr-engine"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8298d5a2e38bb91820b92bbd7e5aaf1d3b95ed9f096fc66393c50af38ff8155d"
-dependencies = [
- "libR-sys",
-]
-
-[[package]]
 name = "extendr-macros"
-version = "0.4.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "09bf0849f0d48209be8163378248137fed5ccb5f464d171cf93a19f31a9e6c67"
+checksum = "81b58838056f294411d0b2c35ac1a2b24c507d6828b75f2c1e74f00ee9b99267"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -58,16 +48,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "lazy_static"
-version = "1.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
-
-[[package]]
 name = "libR-sys"
-version = "0.4.0"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd728a97b9b0975f546bc865a7413e0ce6f98a8f6cea52e77dc5ee0bcea00adf"
+checksum = "06ac9752bc1e83f5a354a62b9e81bd8db4468b1008e29f262441e7f0e91e6bb3"
 
 [[package]]
 name = "libloading"
@@ -228,9 +212,9 @@ checksum = "67b1b7a3b5fe4f1376887184045fcf45c69e92af734b7aaddc05fb777b6fbd03"
 
 [[package]]
 name = "syn"
-version = "1.0.109"
+version = "2.0.114"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72b64191b275b66ffe2469e8af2c1cfe3bafa67b529ead792a6d0160888b4237"
+checksum = "d4d107df263a3013ef9b1879b0df87d706ff80f65a86ea879bd9c31f9b307c2a"
 dependencies = [
  "proc-macro2",
  "quote",

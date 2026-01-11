@@ -19,4 +19,6 @@
 ^LICENSE\.md$
 ^tools$
 ^cran-comments\.md$
+^inst/onnxruntime$
+^tools/onnxruntime$
 ^\.sisyphus$
