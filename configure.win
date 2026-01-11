@@ -1,3 +1,82 @@
 #!/bin/sh
+
+# Configure script for Windows
+# Downloads ONNX Runtime directly using shell commands to avoid Rscript segfaults
+
 echo "Running configure.win..."
-Rscript tools/download-ort.R
+
+ORT_VERSION="1.23.0"
+ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-win-x64-${ORT_VERSION}.zip"
+ORT_FILE="ort.zip"
+TARGET_DIR="inst/onnxruntime"
+
+# Create target directory
+mkdir -p "${TARGET_DIR}"
+
+# Check if already exists (simple check)
+if [ -f "${TARGET_DIR}/lib/onnxruntime.dll" ] || [ -f "${TARGET_DIR}/onnxruntime.dll" ]; then
+  echo "ONNX Runtime already appears to be installed."
+  exit 0
+fi
+
+echo "Downloading ONNX Runtime ${ORT_VERSION}..."
+curl -L -o "${ORT_FILE}" "${ORT_URL}"
+
+if [ ! -f "${ORT_FILE}" ]; then
+  echo "Download failed."
+  exit 1
+fi
+
+echo "Extracting..."
+unzip -q "${ORT_FILE}" -d tools_tmp
+
+# Find the extracted directory
+EXTRACTED_DIR=$(find tools_tmp -maxdepth 1 -type d -name "onnxruntime-*" | head -n 1)
+
+if [ -z "${EXTRACTED_DIR}" ]; then
+  echo "Extraction failed or directory not found."
+  exit 1
+fi
+
+echo "Installing from ${EXTRACTED_DIR}..."
+
+# Create lib directory
+mkdir -p "${TARGET_DIR}/lib"
+mkdir -p "${TARGET_DIR}/include"
+
+# Find DLL and copy to lib/
+# It might be in root, bin/, or lib/ of the extracted folder
+DLL_FOUND=0
+
+# Check lib/
+if [ -f "${EXTRACTED_DIR}/lib/onnxruntime.dll" ]; then
+  cp "${EXTRACTED_DIR}/lib/onnxruntime.dll" "${TARGET_DIR}/lib/"
+  DLL_FOUND=1
+elif [ -f "${EXTRACTED_DIR}/bin/onnxruntime.dll" ]; then
+  cp "${EXTRACTED_DIR}/bin/onnxruntime.dll" "${TARGET_DIR}/lib/"
+  DLL_FOUND=1
+elif [ -f "${EXTRACTED_DIR}/onnxruntime.dll" ]; then
+  cp "${EXTRACTED_DIR}/onnxruntime.dll" "${TARGET_DIR}/lib/"
+  DLL_FOUND=1
+fi
+
+if [ $DLL_FOUND -eq 0 ]; then
+  echo "Error: onnxruntime.dll not found in extracted archive."
+  exit 1
+fi
+
+# Copy other lib files (like .lib for linking if needed)
+if [ -d "${EXTRACTED_DIR}/lib" ]; then
+  cp -r "${EXTRACTED_DIR}/lib/"* "${TARGET_DIR}/lib/"
+fi
+
+# Copy headers
+if [ -d "${EXTRACTED_DIR}/include" ]; then
+  cp -r "${EXTRACTED_DIR}/include/"* "${TARGET_DIR}/include/"
+fi
+
+# Clean up
+rm -f "${ORT_FILE}"
+rm -rf tools_tmp
+
+echo "ONNX Runtime setup complete."
