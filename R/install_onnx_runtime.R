@@ -121,9 +121,38 @@ install_onnx_runtime <- function(version = "1.23.0", quiet = FALSE, ...) {
       message(sprintf("Installing to %s...", lib_dir))
     }
 
-    # Copy lib directory
+    # Helper to find and copy library file
+    lib_filename <- switch(platform,
+      "Linux" = "libonnxruntime.so",
+      "Darwin" = "libonnxruntime.dylib",
+      "Windows" = "onnxruntime.dll"
+    )
+
+    # Search for library file recursively
+    found_lib <- list.files(extracted_dir, pattern = paste0("^", lib_filename, "$"), 
+                           recursive = TRUE, full.names = TRUE)
+    
+    if (length(found_lib) > 0) {
+      # Use the first match (usually the one in lib/ or root)
+      file.copy(found_lib[1], file.path(lib_dir, lib_filename), overwrite = TRUE)
+      
+      # Also try to copy other contents of lib/ if it exists
+      lib_src_dir <- file.path(extracted_dir, "lib")
+      if (dir.exists(lib_src_dir)) {
+        files_to_copy <- list.files(lib_src_dir, full.names = TRUE)
+        # Exclude the one we just copied if it's the same
+        files_to_copy <- files_to_copy[normalizePath(files_to_copy) != normalizePath(found_lib[1])]
+        if (length(files_to_copy) > 0) {
+          file.copy(files_to_copy, lib_dir, overwrite = TRUE)
+        }
+      }
+    } else {
+      warning("Could not find ", lib_filename, " in extracted archive")
+    }
+
+    # Copy lib directory (legacy fallback)
     lib_src_dir <- file.path(extracted_dir, "lib")
-    if (dir.exists(lib_src_dir)) {
+    if (dir.exists(lib_src_dir) && length(found_lib) == 0) {
       file.copy(list.files(lib_src_dir, full.names = TRUE),
                 lib_dir, overwrite = TRUE)
     }
