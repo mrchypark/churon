@@ -616,7 +616,6 @@ impl RSession {
                 Ok(execution_providers)
             }
         }
-        }
     }
 }
 
