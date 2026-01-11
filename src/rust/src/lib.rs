@@ -1,8 +1,24 @@
 use extendr_api::prelude::*;
 use crate::ndarray::{ArrayD, IxDyn};
+
+#[cfg(not(target_arch = "wasm32"))]
 use ort::execution_providers::ExecutionProviderDispatch;
-use ort::session::{builder::GraphOptimizationLevel, Session};
+#[cfg(not(target_arch = "wasm32"))]
+use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
+#[cfg(not(target_arch = "wasm32"))]
 use ort::value::{Tensor, Value};
+
+#[cfg(target_arch = "wasm32")]
+pub struct Session;
+#[cfg(target_arch = "wasm32")]
+pub struct Value;
+#[cfg(target_arch = "wasm32")]
+pub struct Tensor;
+#[cfg(target_arch = "wasm32")]
+pub struct SessionOutputs;
+#[cfg(target_arch = "wasm32")]
+pub struct ExecutionProviderDispatch;
+
 use std::collections::HashMap;
 use std::fmt;
 use std::path::Path;
@@ -113,6 +129,13 @@ impl RSession {
     }
 
     pub fn get_input_info(&mut self) -> List {
+        #[cfg(target_arch = "wasm32")]
+        {
+            List::from_values(vec![])
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         if let Some(ref cached_info) = self.input_info_cache {
             return List::from_values(cached_info.clone());
         }
@@ -134,9 +157,17 @@ impl RSession {
 
         self.input_info_cache = Some(tensor_infos.clone());
         List::from_values(tensor_infos)
+        }
     }
 
     pub fn get_output_info(&mut self) -> List {
+        #[cfg(target_arch = "wasm32")]
+        {
+            List::from_values(vec![])
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         if let Some(ref cached_info) = self.output_info_cache {
             return List::from_values(cached_info.clone());
         }
@@ -158,6 +189,7 @@ impl RSession {
 
         self.output_info_cache = Some(tensor_infos.clone());
         List::from_values(tensor_infos)
+        }
     }
 
     pub fn get_providers(&self) -> Vec<String> {
@@ -169,6 +201,13 @@ impl RSession {
     }
 
     fn run(&mut self, inputs: List) -> extendr_api::Result<List> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Err(extendr_api::Error::EvalError("ONNX Runtime not supported on WASM".into()))
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         self.validate_session()?;
         self.validate_inputs(&inputs)?;
         let input_data = self.prepare_input_tensors(inputs)?;
@@ -185,6 +224,7 @@ impl RSession {
         };
 
         Self::extract_outputs(outputs, &output_names)
+        }
     }
 }
 
@@ -302,6 +342,13 @@ impl RSession {
         &self,
         input_data: (HashMap<String, ArrayD<f32>>, HashMap<String, Vec<String>>),
     ) -> ChurOnResult<HashMap<String, Value>> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(HashMap::new())
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         let (numeric_tensors, string_tensors) = input_data;
         let mut values: HashMap<String, Value> = HashMap::new();
 
@@ -338,12 +385,20 @@ impl RSession {
         }
 
         Ok(values)
+        }
     }
 
     fn extract_outputs(
-        outputs: ort::session::SessionOutputs,
+        outputs: SessionOutputs,
         output_names: &[String],
     ) -> extendr_api::Result<List> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(List::from_values(vec![]))
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         let mut r_outputs = Vec::new();
         let mut out_names = Vec::new();
         for output_name in output_names {
@@ -391,6 +446,7 @@ impl RSession {
         let mut result = List::from_values(r_outputs);
         result.set_names(out_names)?;
         Ok(result)
+        }
     }
 }
 
@@ -399,6 +455,13 @@ impl RSession {
         path: &str,
         providers: Option<Vec<String>>,
     ) -> extendr_api::Result<Self> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Err(extendr_api::Error::EvalError("ONNX Runtime is not supported on WASM".into()))
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
+        {
         // Use Once to ensure ort initialization happens only once
         // This prevents mutex poisoning when called concurrently
         ORT_INIT.call_once(|| {
@@ -460,9 +523,6 @@ impl RSession {
             .iter()
             .map(|output| output.name().to_string())
             .collect();
-
-        // In ort v2, Outlet doesn't expose dimensions directly.
-        // Use placeholder shapes - user must provide correct shapes at inference time.
         let input_shapes: Vec<Vec<i64>> = inputs
             .iter()
             .map(|_| vec![-1]) // Placeholder - dynamic dimension
@@ -482,11 +542,18 @@ impl RSession {
             input_info_cache: None,
             output_info_cache: None,
         })
+        }
     }
 
     fn get_execution_providers(
         providers: Option<Vec<String>>,
     ) -> ChurOnResult<Vec<ExecutionProviderDispatch>> {
+        #[cfg(target_arch = "wasm32")]
+        {
+            Ok(vec![])
+        }
+
+        #[cfg(not(target_arch = "wasm32"))]
         match providers {
             Some(provider_names) => {
                 let mut execution_providers = Vec::new();
@@ -548,6 +615,7 @@ impl RSession {
                 ]);
                 Ok(execution_providers)
             }
+        }
         }
     }
 }
