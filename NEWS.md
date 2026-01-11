@@ -1,4 +1,12 @@
-# churon 0.0.0.9000
+# churon 0.1.4
+
+* PREPARE FOR CRAN SUBMISSION
+* Added `creating-model-packages` vignette.
+* Updated `cran-comments.md` with package size justification.
+* Removed non-standard fields from `DESCRIPTION`.
+* Cleaned up `.Rbuildignore`.
+
+# churon 0.1.3
 
 ## New Features
 
