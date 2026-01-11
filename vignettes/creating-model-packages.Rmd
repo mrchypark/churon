@@ -1,0 +1,134 @@
+---
+title: "Creating R Packages with ONNX Runtime"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Creating R Packages with ONNX Runtime}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to create an R package that uses `churon` to provide machine learning model capabilities. The `churon` package provides high-performance bindings to ONNX Runtime via Rust, enabling you to ship and run ONNX models efficiently within your R package.
+
+## Introduction
+
+Many R packages aim to provide pre-trained machine learning models for specific tasks (e.g., image classification, NLP, time-series forecasting). Distributing these models and running them efficiently across different platforms can be challenging.
+
+`churon` solves this by:
+1.  Providing a lightweight, high-performance inference engine (ONNX Runtime).
+2.  Handling cross-platform compatibility (macOS, Windows, Linux).
+3.  Offering a simple API to load models and run inference.
+
+## Package Structure
+
+To build a package based on `churon`, your package structure might look like this:
+
+```text
+my.model.pkg/
+├── DESCRIPTION
+├── NAMESPACE
+├── R/
+│   ├── model.R       # Interface functions
+│   └── zzz.R         # Package startup (load churon)
+└── inst/
+    └── models/
+        └── my_model.onnx  # Your pre-trained ONNX model
+```
+
+## Step 1: Add Dependencies
+
+In your `DESCRIPTION` file, add `churon` to `Imports`:
+
+```dcf
+Imports:
+    churon
+```
+
+## Step 2: Include Your Model
+
+Place your `.onnx` model file inside `inst/models/` (or any subdirectory of `inst/`). When the package is installed, this file will be moved to the package's root directory, accessible via `system.file()`.
+
+## Step 3: Implement Inference Function
+
+In `R/model.R`, create a function that loads the model and runs inference.
+
+```r
+#' Run My Model
+#'
+#' @param input_data A numeric matrix or array suitable for the model input.
+#' @return The model output.
+#' @export
+run_my_model <- function(input_data) {
+  # 1. Locate the model file
+  model_path <- system.file("models", "my_model.onnx", package = "my.model.pkg")
+  if (model_path == "") {
+    stop("Model file not found. Please reinstall the package.")
+  }
+
+  # 2. Create an ONNX session
+  # churon handles the initialization of ONNX Runtime
+  session <- churon::onnx_session(model_path)
+
+  # 3. Prepare Input
+  # Ensure input_data matches the model's expected shape and type
+  # You might need to inspect the model first to know the input name:
+  # churon::onnx_input_info(session)
+  
+  input_list <- list(input = input_data) 
+
+  # 4. Run Inference
+  output <- churon::onnx_run(session, input_list)
+
+  return(output)
+}
+```
+
+## Step 4: Using `churon` Features
+
+### Tensor Information
+
+You can inspect your model to ensure inputs are correct:
+
+```r
+# Get input details
+info <- churon::onnx_input_info(session)
+print(info[[1]]$get_name())
+print(info[[1]]$get_shape())
+```
+
+### Execution Providers
+
+`churon` attempts to use the best available execution provider (CPU, CUDA, CoreML, etc.). You can see what's being used:
+
+```r
+print(churon::onnx_providers(session))
+```
+
+## Example: MNIST
+
+The `churon` package itself includes an MNIST example. Here is how it's implemented internally, which serves as a blueprint for your package:
+
+```r
+# Load the session
+session <- churon::onnx_example_session("mnist")
+
+# Create a dummy input (1 batch, 1 channel, 28x28 image)
+input <- array(runif(1*1*28*28), dim = c(1, 1, 28, 28))
+
+# Run
+result <- churon::onnx_run(session, list(Input3 = input))
+
+# Result is a list of outputs (e.g., Plus214_Output_0)
+probs <- result[[1]]
+predicted_class <- which.max(probs) - 1
+```
+
+## Conclusion
+
+By using `churon`, you avoid the complexity of linking against C++ libraries or managing external Python dependencies (like `reticulate`). You simply ship your ONNX model and use standard R code to interact with it.
