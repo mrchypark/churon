@@ -1,147 +1,22 @@
 #!/bin/sh
-
 # Configure script for churon package
-# This script sets up ONNX Runtime for the package build
+# Delegates to R script for robust platform detection and downloading
 
 set -e
 
 echo "Configuring churon package..."
 
-# Detect platform
-PLATFORM=""
-ARCH=""
-
-# Check for Emscripten/WASM build
-if echo "$CC" | grep -q "emcc"; then
-    echo "WASM/Emscripten build detected. Skipping ONNX Runtime download."
-    # Create empty config to satisfy Makevars
-    touch src/ort_config.env
-    exit 0
-fi
-
-case "$(uname -s)" in
-    Linux*)     PLATFORM="linux";;
-    Darwin*)    PLATFORM="osx";;
-    CYGWIN*|MINGW*|MSYS*) PLATFORM="win";;
-    *)          echo "Unsupported platform: $(uname -s)"; exit 1;;
-esac
-
-case "$(uname -m)" in
-    x86_64|amd64)   ARCH="x64";;
-    arm64|aarch64)  ARCH="arm64";;
-    *)              echo "Unsupported architecture: $(uname -m)"; exit 1;;
-esac
-
-echo "Detected platform: $PLATFORM-$ARCH"
-
-# ONNX Runtime version - must be >= 1.23.0 for ort v2.x
-ORT_VERSION="1.23.0"
-
-# Set platform-specific variables
-if [ "$PLATFORM" = "linux" ]; then
-    # Linux uses aarch64 naming, not arm64
-    if [ "$ARCH" = "arm64" ]; then
-        ORT_ARCHIVE="onnxruntime-linux-aarch64-$ORT_VERSION.tgz"
-    else
-        ORT_ARCHIVE="onnxruntime-linux-$ARCH-$ORT_VERSION.tgz"
-    fi
-    ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v$ORT_VERSION/$ORT_ARCHIVE"
-    ORT_LIB_NAME="libonnxruntime.so"
-elif [ "$PLATFORM" = "osx" ]; then
-    if [ "$ARCH" = "arm64" ]; then
-        ORT_ARCHIVE="onnxruntime-osx-arm64-$ORT_VERSION.tgz"
-    else
-        ORT_ARCHIVE="onnxruntime-osx-x86_64-$ORT_VERSION.tgz"
-    fi
-    ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v$ORT_VERSION/$ORT_ARCHIVE"
-    ORT_LIB_NAME="libonnxruntime.dylib"
-elif [ "$PLATFORM" = "win" ]; then
-    if [ "$ARCH" = "arm64" ]; then
-        ORT_ARCHIVE="onnxruntime-win-arm64-$ORT_VERSION.zip"
-    else
-        ORT_ARCHIVE="onnxruntime-win-x64-$ORT_VERSION.zip"
-    fi
-    ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v$ORT_VERSION/$ORT_ARCHIVE"
-    ORT_LIB_NAME="onnxruntime.dll"
-fi
-
-# Create tools directory if it doesn't exist
-mkdir -p tools
-
-# Download and extract ONNX Runtime if not already present
-ORT_DIR="tools/onnxruntime-$PLATFORM-$ARCH-$ORT_VERSION"
-if [ ! -d "$ORT_DIR" ]; then
-    echo "Downloading ONNX Runtime $ORT_VERSION for $PLATFORM-$ARCH..."
-    
-    cd tools
-    
-    # Download with fallback methods
-    if command -v curl >/dev/null 2>&1; then
-        curl -L -o "$ORT_ARCHIVE" "$ORT_URL"
-    elif command -v wget >/dev/null 2>&1; then
-        wget -O "$ORT_ARCHIVE" "$ORT_URL"
-    else
-        echo "Error: Neither curl nor wget found. Cannot download ONNX Runtime."
-        echo "Please install curl or wget, or manually download ONNX Runtime."
-        exit 1
-    fi
-    
-    # Extract archive
-    if [ "$PLATFORM" = "win" ]; then
-        if command -v unzip >/dev/null 2>&1; then
-            unzip -q "$ORT_ARCHIVE"
-        else
-            echo "Error: unzip not found. Cannot extract ONNX Runtime archive."
-            exit 1
-        fi
-    else
-        tar -xzf "$ORT_ARCHIVE"
-    fi
-    
-    # Clean up archive
-    rm -f "$ORT_ARCHIVE"
-    
-    cd ..
-    
-    echo "ONNX Runtime downloaded and extracted successfully."
+# Check for Rscript
+if command -v Rscript >/dev/null 2>&1; then
+    RSCRIPT="Rscript"
+elif [ -n "$R_HOME" ] && [ -f "$R_HOME/bin/Rscript" ]; then
+    RSCRIPT="$R_HOME/bin/Rscript"
 else
-    echo "ONNX Runtime already present at $ORT_DIR"
+    echo "Error: Rscript not found. Cannot configure."
+    exit 1
 fi
 
-# Set environment variables for the build
-ORT_LIB_PATH="$PWD/$ORT_DIR/lib/$ORT_LIB_NAME"
-ORT_INCLUDE_PATH="$PWD/$ORT_DIR/include"
+echo "Running tools/download-ort.R..."
+"$RSCRIPT" tools/download-ort.R
 
-# Create a configuration file for the build
-cat > src/ort_config.env << EOF
-# ONNX Runtime configuration
-export ORT_DYLIB_PATH="$ORT_LIB_PATH"
-export ORT_INCLUDE_PATH="$ORT_INCLUDE_PATH"
-export ORT_LIB_PATH="$PWD/$ORT_DIR/lib"
-EOF
-
-echo "ONNX Runtime configuration written to src/ort_config.env"
-
-# Verify the library exists
-if [ -f "$ORT_LIB_PATH" ]; then
-    echo "ONNX Runtime library found at: $ORT_LIB_PATH"
-    
-    # Copy ONNX Runtime to inst directory for package installation
-    echo "Copying ONNX Runtime to inst directory..."
-    mkdir -p inst/onnxruntime/lib
-    mkdir -p inst/onnxruntime/include
-    
-    # Copy library files
-    cp -r "$PWD/$ORT_DIR/lib/"* inst/onnxruntime/lib/
-    
-    # Copy header files
-    cp -r "$PWD/$ORT_DIR/include/"* inst/onnxruntime/include/
-    
-    echo "ONNX Runtime copied to inst directory successfully."
-else
-    echo "Warning: ONNX Runtime library not found at expected path: $ORT_LIB_PATH"
-    echo "Build may fail. Please check the download and extraction."
-fi
-
-echo "Configuration completed successfully."
 exit 0

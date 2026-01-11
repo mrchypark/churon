@@ -145,6 +145,29 @@ download_onnx_runtime <- function() {
   cat("  ORT_INCLUDE_PATH =", Sys.getenv("ORT_INCLUDE_PATH"), "\n")
   cat("  ORT_LIB_PATH =", Sys.getenv("ORT_LIB_PATH"), "\n")
   
+  # Copy to inst directory for package installation
+  # This ensures the library is included in the installed package
+  cat("Copying ONNX Runtime to inst directory...\n")
+  inst_lib_dir <- file.path("inst", "onnxruntime", "lib")
+  inst_inc_dir <- file.path("inst", "onnxruntime", "include")
+  
+  if (!dir.exists(inst_lib_dir)) dir.create(inst_lib_dir, recursive = TRUE)
+  if (!dir.exists(inst_inc_dir)) dir.create(inst_inc_dir, recursive = TRUE)
+  
+  # Copy files - use file.copy with recursive=TRUE for directories if needed
+  # but here we copy contents of lib/ and include/
+  file.copy(list.files(file.path(ort_dir, "lib"), full.names = TRUE), inst_lib_dir, recursive = TRUE)
+  file.copy(list.files(file.path(ort_dir, "include"), full.names = TRUE), inst_inc_dir, recursive = TRUE)
+  
+  # Write src/ort_config.env for Makevars
+  cat("Writing src/ort_config.env...\n")
+  config_content <- c(
+    paste0('export ORT_DYLIB_PATH="', normalizePath(lib_path), '"'),
+    paste0('export ORT_INCLUDE_PATH="', normalizePath(include_path), '"'),
+    paste0('export ORT_LIB_PATH="', normalizePath(file.path(ort_dir, "lib")), '"')
+  )
+  writeLines(config_content, "src/ort_config.env")
+  
   return(list(
     lib_path = lib_path,
     include_path = include_path,
