@@ -6,13 +6,13 @@
 \alias{churon-package}
 \title{churon: ONNX Runtime Integration for R}
 \description{
-Provides R bindings for ONNX Runtime to run machine learning inference with ONNX models. Built with Rust for high performance and memory safety, offering comprehensive error handling and validation. Includes bundled example models (MNIST) for testing.
+Provides high-performance R bindings for ONNX Runtime, enabling efficient machine learning model inference. Written in Rust for memory safety and speed, the package supports cross-platform model execution with multiple execution providers (CPU, CUDA, CoreML, OneDNN). Includes comprehensive error handling and validation, with bundled MNIST example model for immediate testing and prototyping. Designed for production use with support for macOS (ARM64/x64), Linux (x64/aarch64), and Windows (x64).
 }
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/churon-project/churon}
-  \item Report bugs at \url{https://github.com/churon-project/churon/issues}
+  \item \url{https://github.com/mrchypark/churon}
+  \item Report bugs at \url{https://github.com/mrchypark/churon/issues}
 }
 
 }

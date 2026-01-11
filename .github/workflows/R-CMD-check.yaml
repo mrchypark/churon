@@ -132,8 +132,15 @@ jobs:
 
       - name: Install R Dependencies
         run: |
-          Rscript -e "if (!require('rcmdcheck', quietly = TRUE)) install.packages('rcmdcheck', repos='https://cloud.r-project.org', lib=.libPaths()[1])"
+          Rscript -e "if (!require('rcmdcheck', quietly = TRUE)) install.packages('rcmdcheck', repos='https://cloud.r-project.org')"
+          Rscript -e "if (!require('knitr', quietly = TRUE)) install.packages('knitr', repos='https://cloud.r-project.org')"
+          Rscript -e "if (!require('rextendr', quietly = TRUE)) install.packages('rextendr', repos='https://cloud.r-project.org')"
 
+      - name: Vendor Rust Dependencies
+        run: |
+          # Vendor Rust dependencies for CRAN compliance
+          Rscript -e "rextendr::vendor_pkgs()"
+          
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'

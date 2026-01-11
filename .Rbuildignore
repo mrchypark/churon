@@ -15,3 +15,7 @@
 ^final_test_report\.R$
 ^DEPLOYMENT_SUMMARY\.md$
 ^\.github$
+^AGENTS\.md$
+^LICENSE\.md$
+^tools$
+^\.sisyphus$
