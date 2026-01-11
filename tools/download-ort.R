@@ -65,10 +65,20 @@ download_onnx_runtime <- function() {
   ort_dir <- file.path("tools", paste0("onnxruntime-", platform_name, "-", arch_name, "-", ort_version))
   archive_path <- file.path("tools", archive_name)
   
-  # Check if ONNX Runtime is already downloaded
+  # Check if ONNX Runtime is already downloaded and valid
+  need_download <- TRUE
   if (dir.exists(ort_dir)) {
-    cat("ONNX Runtime already exists at:", ort_dir, "\n")
-  } else {
+    # Check if content exists (basic validation)
+    if (length(list.files(ort_dir, recursive = TRUE)) > 5) {
+      cat("ONNX Runtime already exists at:", ort_dir, "\n")
+      need_download <- FALSE
+    } else {
+      cat("ONNX Runtime directory exists but appears empty or corrupt. Removing and re-downloading.\n")
+      unlink(ort_dir, recursive = TRUE)
+    }
+  }
+  
+  if (need_download) {
     cat("Downloading ONNX Runtime", ort_version, "for", platform_name, "-", arch_name, "\n")
     cat("URL:", download_url, "\n")
     
