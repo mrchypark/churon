@@ -1,5 +1,6 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>/404.html</loc></url>
+<url><loc>/AGENTS.html</loc></url>
 <url><loc>/LICENSE-text.html</loc></url>
 <url><loc>/LICENSE.html</loc></url>
 <url><loc>/authors.html</loc></url>
@@ -13,6 +14,7 @@
 <url><loc>/reference/find_model_path.html</loc></url>
 <url><loc>/reference/get_onnx_runtime_info.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
+<url><loc>/reference/install_onnx_runtime.html</loc></url>
 <url><loc>/reference/onnx_download_model.html</loc></url>
 <url><loc>/reference/onnx_download_models.html</loc></url>
 <url><loc>/reference/onnx_example_models.html</loc></url>
@@ -23,6 +25,8 @@
 <url><loc>/reference/onnx_output_info.html</loc></url>
 <url><loc>/reference/onnx_providers.html</loc></url>
 <url><loc>/reference/onnx_run.html</loc></url>
+<url><loc>/reference/onnx_runtime_is_installed.html</loc></url>
+<url><loc>/reference/onnx_runtime_lib_path.html</loc></url>
 <url><loc>/reference/onnx_session.html</loc></url>
 <url><loc>/reference/safe_onnx_run.html</loc></url>
 <url><loc>/reference/safe_onnx_session.html</loc></url>
