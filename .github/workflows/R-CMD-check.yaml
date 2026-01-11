@@ -21,7 +21,7 @@ jobs:
       matrix:
         config:
           - {os: macos-latest,   r: 'release'}
-          - {os: macos-13,       r: 'release'} # Intel Mac
+          - {os: macos-15,       r: 'release'} # Latest macOS (Intel or ARM depending on availability, aiming for updated image)
           - {os: windows-latest, r: 'release'}
           - {os: ubuntu-latest,  r: 'release'}
 
