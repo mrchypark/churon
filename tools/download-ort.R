@@ -107,20 +107,33 @@ download_onnx_runtime <- function() {
   
   lib_path <- file.path(ort_dir, "lib", lib_name)
   
-  # On Windows, DLL might be in root or bin, search for it if not in lib
-  if (!file.exists(lib_path) && platform_name == "win") {
+  # Check if library exists in standard path, if not search for it
+  # This handles variations in archive structure across platforms and versions
+  if (!file.exists(lib_path)) {
+    cat("Library not found at", lib_path, "- searching...\n")
+    
     potential_paths <- c(
       file.path(ort_dir, lib_name),
       file.path(ort_dir, "bin", lib_name)
     )
     
+    # Also search recursively as a fallback
+    found_libs <- list.files(ort_dir, pattern = paste0("^", lib_name, "$"), recursive = TRUE, full.names = TRUE)
+    if (length(found_libs) > 0) {
+      potential_paths <- c(potential_paths, found_libs)
+    }
+    
     for (p in potential_paths) {
       if (file.exists(p)) {
+        cat("Found library at:", p, "\n")
         # Copy to lib folder to maintain consistent structure
         if (!dir.exists(file.path(ort_dir, "lib"))) {
           dir.create(file.path(ort_dir, "lib"), recursive = TRUE)
         }
-        file.copy(p, lib_path)
+        # Only copy if source and dest are different
+        if (normalizePath(p) != normalizePath(lib_path, mustWork = FALSE)) {
+             file.copy(p, lib_path)
+        }
         break
       }
     }
