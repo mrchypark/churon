@@ -1,3 +1,5 @@
+cat("Hello from download-ort.R\n")
+
 # ONNX Runtime Download and Setup Script for churon package
 # This script downloads and configures ONNX Runtime for the current platform
 
