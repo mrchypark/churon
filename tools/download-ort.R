@@ -68,12 +68,25 @@ download_onnx_runtime <- function() {
   # Check if ONNX Runtime is already downloaded and valid
   need_download <- TRUE
   if (dir.exists(ort_dir)) {
-    # Check if content exists (basic validation)
-    if (length(list.files(ort_dir, recursive = TRUE)) > 5) {
-      cat("ONNX Runtime already exists at:", ort_dir, "\n")
+    # Check if library exists using the robust search pattern
+    search_pattern <- switch(platform_name,
+      "win" = "onnxruntime.*\\.dll$",
+      "osx" = "libonnxruntime.*\\.dylib",
+      "linux" = "libonnxruntime.*\\.so"
+    )
+    
+    # Check if lib exists in standard location or anywhere recursive
+    lib_exists <- file.exists(file.path(ort_dir, "lib", lib_name))
+    if (!lib_exists) {
+      found <- list.files(ort_dir, pattern = search_pattern, recursive = TRUE)
+      lib_exists <- length(found) > 0
+    }
+
+    if (lib_exists) {
+      cat("ONNX Runtime already exists and library verified at:", ort_dir, "\n")
       need_download <- FALSE
     } else {
-      cat("ONNX Runtime directory exists but appears empty or corrupt. Removing and re-downloading.\n")
+      cat("ONNX Runtime directory exists but library missing. Removing and re-downloading.\n")
       unlink(ort_dir, recursive = TRUE)
     }
   }
