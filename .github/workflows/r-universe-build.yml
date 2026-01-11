@@ -1,0 +1,17 @@
+name: R-universe Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+jobs:
+  r-universe:
+    uses: r-universe-org/workflows/.github/workflows/build.yml@v3
+    permissions:
+      contents: read
+      packages: read
+    with:
+      repository: https://github.com/${{ github.repository }}
+      ref: ${{ github.sha }}
+    secrets: inherit
