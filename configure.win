@@ -1,2 +1,6 @@
 #!/bin/sh
-"${R_HOME}/bin/Rscript" tools/download-ort.R
+R_SCRIPT="${R_HOME}/bin/Rscript"
+if [ -e "${R_HOME}/bin/x64/Rscript.exe" ]; then
+  R_SCRIPT="${R_HOME}/bin/x64/Rscript.exe"
+fi
+"${R_SCRIPT}" tools/download-ort.R

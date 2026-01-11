@@ -1,6 +1,8 @@
 # ONNX Runtime Download and Setup Script for churon package
 # This script downloads and configures ONNX Runtime for the current platform
 
+cat("Starting download-ort.R script...\n")
+
 download_onnx_runtime <- function() {
   # ONNX Runtime version - must be >= 1.23.0 for ort v2.x
   ort_version <- "1.23.0"
