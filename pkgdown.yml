@@ -1,5 +1,6 @@
 pandoc: 3.1.11
 pkgdown: 2.2.0
 pkgdown_sha: ~
-articles: {}
-last_built: 2026-01-11T11:17Z
+articles:
+  creating-model-packages: creating-model-packages.html
+last_built: 2026-01-11T11:32Z
