@@ -103,16 +103,13 @@ pub struct RSession {
 
 #[extendr]
 impl RSession {
-    pub fn from_path(path: &str) -> Self {
-        match Self::from_path_with_providers_internal(path, None) {
-            Ok(x) => x,
-            Err(e) => panic!("{}", e),
-        }
+    pub fn from_path(path: &str) -> extendr_api::Result<Self> {
+        Self::from_path_with_providers_internal(path, None)
     }
 
     pub fn check_input(&self) {
-        println!("Input names: {:?}", &self.input_names);
-        println!("Input shapes: {:?}", &self.input_shapes);
+        extendr_api::rprintln!("Input names: {:?}", &self.input_names);
+        extendr_api::rprintln!("Input shapes: {:?}", &self.input_shapes);
     }
 
     pub fn get_input_info(&mut self) -> List {
@@ -427,10 +424,10 @@ impl RSession {
                     let _ = env.commit();
                 }
                 Ok(Err(e)) => {
-                    eprintln!("Warning: ONNX Runtime initialization failed: {}", e);
+                    extendr_api::rprintln!("Warning: ONNX Runtime initialization failed: {}", e);
                 }
                 Err(_) => {
-                    eprintln!("Warning: ONNX Runtime initialization panicked (possible corrupted library)");
+                    extendr_api::rprintln!("Warning: ONNX Runtime initialization panicked (possible corrupted library)");
                 }
             }
         });
