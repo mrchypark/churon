@@ -7,7 +7,7 @@ Follow these guidelines to work effectively in this hybrid R/Rust environment.
 
 ### Prerequisites
 - **R** (>= 4.0.0)
-- **Rust** (>= 1.70.0)
+- **Rust** (>= 1.75.0)
 - **ONNX Runtime**: Must be installed via `install_onnx_runtime()` (R) or manually placed in `inst/onnxruntime/`.
 
 ### R Development (Primary)

@@ -18,7 +18,7 @@ churon provides R bindings for ONNX Runtime, enabling high-performance machine l
 ### System Requirements
 
 - R (>= 4.0.0)
-- Rust (>= 1.70.0)
+- Rust (>= 1.75.0)
 - macOS ARM64 (Apple Silicon) - current platform
 
 ### Install from GitHub
