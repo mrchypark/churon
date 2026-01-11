@@ -1,5 +1,5 @@
 use extendr_api::prelude::*;
-use ndarray::{ArrayD, IxDyn};
+use crate::ndarray::{ArrayD, IxDyn};
 use ort::execution_providers::ExecutionProviderDispatch;
 use ort::session::{builder::GraphOptimizationLevel, Session};
 use ort::value::{Tensor, Value};
@@ -88,6 +88,7 @@ impl From<ChurOnError> for extendr_api::Error {
 
 pub type ChurOnResult<T> = std::result::Result<T, ChurOnError>;
 
+#[extendr]
 pub struct RSession {
     pub session: Session,
     pub input_names: Vec<String>,
