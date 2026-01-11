@@ -118,7 +118,13 @@ download_onnx_runtime <- function() {
     )
     
     # Also search recursively as a fallback
-    found_libs <- list.files(ort_dir, pattern = paste0("^", lib_name, "$"), recursive = TRUE, full.names = TRUE)
+    # Relaxed pattern to match versioned files (e.g. libonnxruntime.1.23.0.dylib)
+    search_pattern <- switch(platform_name,
+      "win" = "onnxruntime.*\\.dll$",
+      "osx" = "libonnxruntime.*\\.dylib",
+      "linux" = "libonnxruntime.*\\.so"
+    )
+    found_libs <- list.files(ort_dir, pattern = search_pattern, recursive = TRUE, full.names = TRUE)
     if (length(found_libs) > 0) {
       potential_paths <- c(potential_paths, found_libs)
     }
