@@ -20,6 +20,13 @@ download_onnx_runtime <- function() {
     "Windows" = "win",
     stop("Unsupported platform: ", platform)
   )
+
+  # Set up library name
+  lib_name <- switch(platform_name,
+    "linux" = "libonnxruntime.so",
+    "osx" = "libonnxruntime.dylib", 
+    "win" = "onnxruntime.dll"
+  )
   
   # Normalize architecture names
   if (arch == "wasm32" || platform == "Emscripten") {
@@ -122,12 +129,6 @@ download_onnx_runtime <- function() {
   }
   
   # Set up library path
-  lib_name <- switch(platform_name,
-    "linux" = "libonnxruntime.so",
-    "osx" = "libonnxruntime.dylib", 
-    "win" = "onnxruntime.dll"
-  )
-  
   lib_path <- file.path(ort_dir, "lib", lib_name)
   
   # Check if library exists in standard path, if not search for it
