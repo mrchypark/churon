@@ -20,6 +20,7 @@ download_onnx_runtime <- function() {
   # Normalize architecture names
   arch_name <- switch(arch,
     "x86_64" = "x64",
+    "x86-64" = "x64",
     "amd64" = "x64",
     "arm64" = "arm64",
     "aarch64" = "arm64",
