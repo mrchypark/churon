@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="index.html">churon</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -92,7 +92,7 @@
 <li>
 <p><strong>Update Rust Wrappers</strong>: If you modify <code>#[extendr]</code> signatures in Rust, regenerate R wrappers:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">rextendr</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">rextendr</span><span class="fu">::</span><span class="fu"><a href="https://extendr.github.io/rextendr/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul></div>
 <div class="section level3">
@@ -163,7 +163,7 @@
 <ul><li>
 <strong>Development</strong>: Do not commit <code>vendor/</code> to git.</li>
 <li>
-<strong>Release</strong>: Run <code>rextendr::vendor_pkgs()</code> before building the source tarball.</li>
+<strong>Release</strong>: Run <code><a href="https://extendr.github.io/rextendr/reference/vendor_pkgs.html" class="external-link">rextendr::vendor_pkgs()</a></code> before building the source tarball.</li>
 <li>
 <strong>Note</strong>: Ensure <code>.Rbuildignore</code> does <em>not</em> ignore <code>src/rust/vendor</code> when building for CRAN.</li>
 </ul></li>
@@ -197,7 +197,7 @@
 </ul></li>
 <li>
 <strong>Git Workflow</strong>:
-<ul><li>Commit <code>R/extendr-wrappers.R</code> only if you ran <code>rextendr::document()</code>.</li>
+<ul><li>Commit <code>R/extendr-wrappers.R</code> only if you ran <code><a href="https://extendr.github.io/rextendr/reference/document.html" class="external-link">rextendr::document()</a></code>.</li>
 <li>Do not commit <code>src/rust/target/</code>.</li>
 </ul></li>
 </ol></div>

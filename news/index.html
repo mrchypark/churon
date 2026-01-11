@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">churon</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.3</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.4</span>
       </span>
     </div>
 
@@ -58,11 +58,19 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.0.0.9000" id="churon-0009000">churon 0.0.0.9000<a class="anchor" aria-label="anchor" href="#churon-0009000"></a></h2>
+<h2 class="page-header" data-toc-text="0.1.4" id="churon-014">churon 0.1.4<a class="anchor" aria-label="anchor" href="#churon-014"></a></h2>
+<ul><li>PREPARE FOR CRAN SUBMISSION</li>
+<li>Added <code>creating-model-packages</code> vignette.</li>
+<li>Updated <code>cran-comments.md</code> with package size justification.</li>
+<li>Removed non-standard fields from <code>DESCRIPTION</code>.</li>
+<li>Cleaned up <code>.Rbuildignore</code>.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="0.1.3" id="churon-013">churon 0.1.3<a class="anchor" aria-label="anchor" href="#churon-013"></a></h2>
 <div class="section level3">
-<h3 id="new-features-0-0-0-9000">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-0-0-9000"></a></h3>
+<h3 id="new-features-0-1-3">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-1-3"></a></h3>
 <div class="section level4">
-<h4 id="core-onnx-runtime-integration-0-0-0-9000">Core ONNX Runtime Integration<a class="anchor" aria-label="anchor" href="#core-onnx-runtime-integration-0-0-0-9000"></a></h4>
+<h4 id="core-onnx-runtime-integration-0-1-3">Core ONNX Runtime Integration<a class="anchor" aria-label="anchor" href="#core-onnx-runtime-integration-0-1-3"></a></h4>
 <ul><li>
 <strong>ONNX Session Management</strong>: Complete implementation of RSession for model loading and management</li>
 <li>
@@ -71,7 +79,7 @@
 <strong>High-Performance Inference</strong>: Rust-based implementation for optimal performance and memory safety</li>
 </ul></div>
 <div class="section level4">
-<h4 id="r-interface-functions-0-0-0-9000">R Interface Functions<a class="anchor" aria-label="anchor" href="#r-interface-functions-0-0-0-9000"></a></h4>
+<h4 id="r-interface-functions-0-1-3">R Interface Functions<a class="anchor" aria-label="anchor" href="#r-interface-functions-0-1-3"></a></h4>
 <ul><li>
 <code><a href="../reference/onnx_session.html">onnx_session()</a></code>: Create ONNX Runtime sessions from model files</li>
 <li>
@@ -84,7 +92,7 @@
 <code><a href="../reference/onnx_model_path.html">onnx_model_path()</a></code>: Get loaded model file path</li>
 </ul></div>
 <div class="section level4">
-<h4 id="example-model-support-0-0-0-9000">Example Model Support<a class="anchor" aria-label="anchor" href="#example-model-support-0-0-0-9000"></a></h4>
+<h4 id="example-model-support-0-1-3">Example Model Support<a class="anchor" aria-label="anchor" href="#example-model-support-0-1-3"></a></h4>
 <ul><li>
 <strong>Korean Text Processing</strong>: Built-in support for Korean spacing (kospacing) models</li>
 <li>
@@ -95,7 +103,7 @@
 <code><a href="../reference/onnx_example_session.html">onnx_example_session()</a></code>: Quick session creation with example models</li>
 </ul></div>
 <div class="section level4">
-<h4 id="error-handling-and-validation-0-0-0-9000">Error Handling and Validation<a class="anchor" aria-label="anchor" href="#error-handling-and-validation-0-0-0-9000"></a></h4>
+<h4 id="error-handling-and-validation-0-1-3">Error Handling and Validation<a class="anchor" aria-label="anchor" href="#error-handling-and-validation-0-1-3"></a></h4>
 <ul><li>
 <strong>Comprehensive Input Validation</strong>: Multi-layer validation at both Rust and R levels</li>
 <li>
@@ -106,7 +114,7 @@
 <code>check_onnx_runtime()</code>: Runtime environment availability checking</li>
 </ul></div>
 <div class="section level4">
-<h4 id="data-conversion-system-0-0-0-9000">Data Conversion System<a class="anchor" aria-label="anchor" href="#data-conversion-system-0-0-0-9000"></a></h4>
+<h4 id="data-conversion-system-0-1-3">Data Conversion System<a class="anchor" aria-label="anchor" href="#data-conversion-system-0-1-3"></a></h4>
 <ul><li>
 <strong>Multi-Type Support</strong>: Conversion between R data types and ndarray (f32, f64, i32, i64)</li>
 <li>
@@ -115,7 +123,7 @@
 <strong>Memory Efficient</strong>: Optimized data conversion with minimal copying</li>
 </ul></div>
 <div class="section level4">
-<h4 id="documentation-and-examples-0-0-0-9000">Documentation and Examples<a class="anchor" aria-label="anchor" href="#documentation-and-examples-0-0-0-9000"></a></h4>
+<h4 id="documentation-and-examples-0-1-3">Documentation and Examples<a class="anchor" aria-label="anchor" href="#documentation-and-examples-0-1-3"></a></h4>
 <ul><li>
 <strong>Comprehensive Documentation</strong>: Full roxygen2 documentation for all functions</li>
 <li>
@@ -127,16 +135,16 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="technical-implementation-0-0-0-9000">Technical Implementation<a class="anchor" aria-label="anchor" href="#technical-implementation-0-0-0-9000"></a></h3>
+<h3 id="technical-implementation-0-1-3">Technical Implementation<a class="anchor" aria-label="anchor" href="#technical-implementation-0-1-3"></a></h3>
 <div class="section level4">
-<h4 id="rust-backend-0-0-0-9000">Rust Backend<a class="anchor" aria-label="anchor" href="#rust-backend-0-0-0-9000"></a></h4>
+<h4 id="rust-backend-0-1-3">Rust Backend<a class="anchor" aria-label="anchor" href="#rust-backend-0-1-3"></a></h4>
 <ul><li>Built with extendr for seamless R-Rust integration</li>
 <li>Uses ort crate (v1.13.0+) for ONNX Runtime bindings</li>
 <li>Memory-safe implementation with comprehensive error handling</li>
 <li>Support for dynamic tensor dimensions and batch processing</li>
 </ul></div>
 <div class="section level4">
-<h4 id="r-frontend-0-0-0-9000">R Frontend<a class="anchor" aria-label="anchor" href="#r-frontend-0-0-0-9000"></a></h4>
+<h4 id="r-frontend-0-1-3">R Frontend<a class="anchor" aria-label="anchor" href="#r-frontend-0-1-3"></a></h4>
 <ul><li>Intuitive API design following R conventions</li>
 <li>Consistent error handling across all functions</li>
 <li>Comprehensive input validation and type checking</li>
@@ -144,25 +152,25 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="system-requirements-0-0-0-9000">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements-0-0-0-9000"></a></h3>
+<h3 id="system-requirements-0-1-3">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements-0-1-3"></a></h3>
 <ul><li>R (&gt;= 4.0.0)</li>
 <li>ONNX Runtime (&gt;= 1.13.0)</li>
 <li>Rust toolchain (for building from source)</li>
 </ul></div>
 <div class="section level3">
-<h3 id="known-limitations-0-0-0-9000">Known Limitations<a class="anchor" aria-label="anchor" href="#known-limitations-0-0-0-9000"></a></h3>
+<h3 id="known-limitations-0-1-3">Known Limitations<a class="anchor" aria-label="anchor" href="#known-limitations-0-1-3"></a></h3>
 <ul><li>ONNX Runtime library must be installed separately</li>
 <li>Some advanced ONNX features may not be fully supported</li>
 <li>Tensor conversion implementation is still being optimized</li>
 </ul></div>
 <div class="section level3">
-<h3 id="installation-0-0-0-9000">Installation<a class="anchor" aria-label="anchor" href="#installation-0-0-0-9000"></a></h3>
+<h3 id="installation-0-1-3">Installation<a class="anchor" aria-label="anchor" href="#installation-0-1-3"></a></h3>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Install from source (development version)</span></span>
 <span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"churon-project/churon"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="getting-started-0-0-0-9000">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started-0-0-0-9000"></a></h3>
+<h3 id="getting-started-0-1-3">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started-0-1-3"></a></h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
 <span></span>
