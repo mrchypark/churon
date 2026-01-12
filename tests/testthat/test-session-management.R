@@ -1,6 +1,11 @@
 test_that("session creation with valid model", {
   skip_if_not_installed("churon")
   library(churon)
+  
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
 
   models <- onnx_example_models()
 
@@ -17,6 +22,11 @@ test_that("session creation with valid model", {
 test_that("session creation with execution providers", {
   skip_if_not_installed("churon")
   library(churon)
+  
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
 
   models <- onnx_example_models()
 
@@ -36,6 +46,11 @@ test_that("session creation with execution providers", {
 test_that("session information retrieval", {
   skip_if_not_installed("churon")
   library(churon)
+  
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
 
   models <- onnx_example_models()
 

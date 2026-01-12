@@ -2,6 +2,11 @@ test_that("end-to-end workflow with example models", {
   skip_if_not_installed("churon")
   library(churon)
   
+  # Check if ONNX Runtime is actually available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
+  
   # Get available example models
   models <- onnx_example_models()
   
@@ -35,6 +40,11 @@ test_that("convenience functions work correctly", {
   skip_if_not_installed("churon")
   library(churon)
   
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
+
   models <- onnx_example_models()
   
   if (length(models) > 0) {
@@ -60,6 +70,11 @@ test_that("error handling in real scenarios", {
   skip_if_not_installed("churon")
   library(churon)
   
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
+
   # Test with non-existent model
   expect_error(
     onnx_session("/path/to/nonexistent/model.onnx"),
@@ -93,6 +108,11 @@ test_that("input validation works correctly", {
   skip_if_not_installed("churon")
   library(churon)
   
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
+
   models <- onnx_example_models()
   
   if (length(models) > 0) {

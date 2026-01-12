@@ -26,6 +26,11 @@ test_that("error handling for invalid model paths", {
 test_that("error handling for invalid execution providers", {
   skip_if_not_installed("churon")
   library(churon)
+  
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
 
   model_dir <- system.file("model", package = "churon")
   model_files <- list.files(model_dir, pattern = "\\.onnx$", full.names = TRUE)
@@ -55,6 +60,11 @@ test_that("error handling for invalid execution providers", {
 test_that("error handling for inference failures", {
   skip_if_not_installed("churon")
   library(churon)
+  
+  # Check if ONNX Runtime is available
+  if (!check_onnx_runtime_available()) {
+    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+  }
 
   model_dir <- system.file("model", package = "churon")
   model_files <- list.files(model_dir, pattern = "\\.onnx$", full.names = TRUE)

@@ -203,7 +203,8 @@ impl RSession {
     fn run(&mut self, inputs: List) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
-            Err(extendr_api::Error::EvalError("ONNX Runtime not supported on WASM".into()))
+            // Return empty list for WASM - ort crate not available on wasm
+            List::from_values(Vec::<Robj>::new())
         }
 
         #[cfg(not(target_arch = "wasm32"))]
@@ -344,6 +345,7 @@ impl RSession {
     ) -> ChurOnResult<HashMap<String, Value>> {
         #[cfg(target_arch = "wasm32")]
         {
+            // Return empty hashmap for WASM - ort crate not available on wasm
             Ok(HashMap::new())
         }
 
