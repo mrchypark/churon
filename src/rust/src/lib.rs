@@ -128,16 +128,16 @@ impl RSession {
         extendr_api::rprintln!("Input shapes: {:?}", &self.input_shapes);
     }
 
-    pub fn get_input_info(&mut self) -> List {
+    pub fn get_input_info(&mut self) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
-            List::from_values(vec![])
+            Ok(List::from_values(Vec::<Robj>::new()))
         }
 
         #[cfg(not(target_arch = "wasm32"))]
         {
         if let Some(ref cached_info) = self.input_info_cache {
-            return List::from_values(cached_info.clone());
+            return Ok(List::from_values(cached_info.clone()));
         }
 
         let inputs = self.session.inputs();
@@ -156,20 +156,20 @@ impl RSession {
             .collect();
 
         self.input_info_cache = Some(tensor_infos.clone());
-        List::from_values(tensor_infos)
+        Ok(List::from_values(tensor_infos))
         }
     }
 
-    pub fn get_output_info(&mut self) -> List {
+    pub fn get_output_info(&mut self) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
-            List::from_values(vec![])
+            Ok(List::from_values(Vec::<Robj>::new()))
         }
 
         #[cfg(not(target_arch = "wasm32"))]
         {
         if let Some(ref cached_info) = self.output_info_cache {
-            return List::from_values(cached_info.clone());
+            return Ok(List::from_values(cached_info.clone()));
         }
 
         let outputs = self.session.outputs();
@@ -204,7 +204,7 @@ impl RSession {
         #[cfg(target_arch = "wasm32")]
         {
             // Return empty list for WASM - ort crate not available on wasm
-            List::from_values(Vec::<Robj>::new())
+            Ok(List::from_values(Vec::<Robj>::new()))
         }
 
         #[cfg(not(target_arch = "wasm32"))]
