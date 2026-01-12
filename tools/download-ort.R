@@ -6,8 +6,8 @@ cat("Hello from download-ort.R\n")
 cat("Starting download-ort.R script...\n")
 
 download_onnx_runtime <- function() {
-  # ONNX Runtime version - must be >= 1.23.0 for ort v2.x
-  ort_version <- "1.23.0"
+  # ONNX Runtime version - must be >= 1.23.2 for ort v2.x
+  ort_version <- "1.23.2"
   
   # Detect platform and architecture
   platform <- Sys.info()["sysname"]
@@ -21,8 +21,8 @@ download_onnx_runtime <- function() {
     stop("Unsupported platform: ", platform)
   )
 
-  # Set up library name
-  lib_name <- switch(platform_name,
+  # Set up library name (base name, not versioned)
+  lib_base_name <- switch(platform_name,
     "linux" = "libonnxruntime.so",
     "osx" = "libonnxruntime.dylib", 
     "win" = "onnxruntime.dll"
@@ -64,37 +64,32 @@ download_onnx_runtime <- function() {
                         ort_version, "/", archive_name)
   
   # Create tools directory if it doesn't exist
-  if (!dir.exists("tools")) {
-    dir.create("tools", recursive = TRUE)
+  tools_dir <- "tools"
+  if (!dir.exists(tools_dir)) {
+    dir.create(tools_dir, recursive = TRUE)
   }
   
   # Set up paths
-  ort_dir <- file.path("tools", paste0("onnxruntime-", platform_name, "-", arch_name, "-", ort_version))
-  archive_path <- file.path("tools", archive_name)
+  expected_ort_dir <- file.path(tools_dir, paste0("onnxruntime-", platform_name, "-", arch_name, "-", ort_version))
+  archive_path <- file.path(tools_dir, archive_name)
   
   # Check if ONNX Runtime is already downloaded and valid
   need_download <- TRUE
-  if (dir.exists(ort_dir)) {
-    # Check if library exists using the robust search pattern
-    search_pattern <- switch(platform_name,
+  if (dir.exists(expected_ort_dir)) {
+    cat("Checking existing ONNX Runtime at:", expected_ort_dir, "\n")
+    
+    # Search for library in the directory
+    lib_pattern <- switch(platform_name,
       "win" = "onnxruntime.*\\.dll$",
-      "osx" = "libonnxruntime.*\\.dylib",
-      "linux" = "libonnxruntime.*\\.so"
+      "osx" = "libonnxruntime.*\\.dylib$",
+      "linux" = "libonnxruntime\\.so"
     )
     
-    # Check if lib exists in standard location or anywhere recursive
-    lib_exists <- file.exists(file.path(ort_dir, "lib", lib_name))
-    if (!lib_exists) {
-      found <- list.files(ort_dir, pattern = search_pattern, recursive = TRUE)
-      lib_exists <- length(found) > 0
-    }
-
-    if (lib_exists) {
-      cat("ONNX Runtime already exists and library verified at:", ort_dir, "\n")
+    found_libs <- list.files(expected_ort_dir, pattern = lib_pattern, recursive = TRUE, full.names = TRUE)
+    
+    if (length(found_libs) > 0) {
+      cat("Found existing library:", found_libs[1], "\n")
       need_download <- FALSE
-    } else {
-      cat("ONNX Runtime directory exists but library missing. Removing and re-downloading.\n")
-      unlink(ort_dir, recursive = TRUE)
     }
   }
   
@@ -114,13 +109,42 @@ download_onnx_runtime <- function() {
     # Extract archive
     cat("Extracting ONNX Runtime...\n")
     tryCatch({
+      # First, extract to a temporary location to find the actual directory name
+      temp_extract_dir <- file.path(tools_dir, "temp_extract")
+      if (dir.exists(temp_extract_dir)) {
+        unlink(temp_extract_dir, recursive = TRUE)
+      }
+      dir.create(temp_extract_dir, recursive = TRUE)
+      
       if (platform_name == "win") {
-        unzip(archive_path, exdir = "tools")
+        unzip(archive_path, exdir = temp_extract_dir)
       } else {
-        untar(archive_path, exdir = "tools")
+        untar(archive_path, exdir = temp_extract_dir)
       }
       
-      # Clean up archive
+      # Find the extracted directory (it should be onnxruntime-*)
+      extracted_dirs <- list.dirs(temp_extract_dir, full.names = TRUE, recursive = FALSE)
+      extracted_dir <- extracted_dirs[grepl("onnxruntime", extracted_dirs)]
+      
+      if (length(extracted_dir) == 0) {
+        stop("Could not find ONNX Runtime directory in extracted archive")
+      }
+      
+      if (length(extracted_dir) > 1) {
+        cat("Multiple ONNX Runtime directories found, using first one:", extracted_dir[1], "\n")
+        extracted_dir <- extracted_dir[1]
+      }
+      
+      cat("Extracted directory:", extracted_dir, "\n")
+      
+      # Move extracted contents to expected location
+      if (dir.exists(expected_ort_dir)) {
+        unlink(expected_ort_dir, recursive = TRUE)
+      }
+      file.rename(extracted_dir, expected_ort_dir)
+      
+      # Clean up
+      unlink(temp_extract_dir, recursive = TRUE)
       unlink(archive_path)
       cat("Extraction completed successfully\n")
     }, error = function(e) {
@@ -128,60 +152,78 @@ download_onnx_runtime <- function() {
     })
   }
   
-  # Set up library path
-  lib_path <- file.path(ort_dir, "lib", lib_name)
+  # Now find the library in the extracted directory
+  cat("Searching for library in:", expected_ort_dir, "\n")
   
-  # Check if library exists in standard path, if not search for it
-  # This handles variations in archive structure across platforms and versions
-  if (!file.exists(lib_path)) {
-    cat("Library not found at", lib_path, "- searching...\n")
-    
-    potential_paths <- c(
-      file.path(ort_dir, lib_name),
-      file.path(ort_dir, "bin", lib_name)
-    )
-    
-    # Also search recursively as a fallback
-    # Relaxed pattern to match versioned files (e.g. libonnxruntime.so.1.23.0)
-    search_pattern <- switch(platform_name,
-      "win" = "onnxruntime.*\\.dll$",
-      "osx" = "libonnxruntime.*\\.dylib",
-      "linux" = "libonnxruntime.*\\.so.*"
-    )
-    found_libs <- list.files(ort_dir, pattern = search_pattern, recursive = TRUE, full.names = TRUE)
-    if (length(found_libs) > 0) {
-      potential_paths <- c(potential_paths, found_libs)
-    }
-    
-    for (p in potential_paths) {
-      if (file.exists(p)) {
-        cat("Found library at:", p, "\n")
-        # Copy to lib folder to maintain consistent structure
-        if (!dir.exists(file.path(ort_dir, "lib"))) {
-          dir.create(file.path(ort_dir, "lib"), recursive = TRUE)
-        }
-        # Only copy if source and dest are different
-        if (normalizePath(p) != normalizePath(lib_path, mustWork = FALSE)) {
-             file.copy(p, lib_path)
-        }
-        break
-      }
+  # Search patterns for finding library files
+  lib_pattern <- switch(platform_name,
+    "win" = "onnxruntime.*\\.dll$",
+    "osx" = "libonnxruntime.*\\.dylib$",
+    "linux" = "libonnxruntime\\.so"
+  )
+  
+  # Find all matching libraries
+  found_libs <- list.files(expected_ort_dir, pattern = lib_pattern, recursive = TRUE, full.names = TRUE)
+  cat("Found libraries:", found_libs, "\n")
+  
+  if (length(found_libs) == 0) {
+    stop("No ONNX Runtime library found in ", expected_ort_dir)
+  }
+  
+  # Use the first match (prefer non-versioned if available)
+  lib_path <- found_libs[1]
+  cat("Using library:", lib_path, "\n")
+  
+  # Create lib directory if it doesn't exist
+  lib_dir <- file.path(expected_ort_dir, "lib")
+  if (!dir.exists(lib_dir)) {
+    dir.create(lib_dir, recursive = TRUE)
+  }
+  
+  # Copy library to lib/ directory with standard name
+  dest_lib_path <- file.path(lib_dir, lib_base_name)
+  if (normalizePath(lib_path) != normalizePath(dest_lib_path)) {
+    file.copy(lib_path, dest_lib_path, overwrite = TRUE)
+    cat("Copied library to:", dest_lib_path, "\n")
+    lib_path <- dest_lib_path
+  }
+  
+  # Also copy any other library files (versioned ones)
+  for (f in found_libs) {
+    if (normalizePath(f) != normalizePath(lib_path)) {
+      file.copy(f, file.path(lib_dir, basename(f)), overwrite = TRUE)
     }
   }
-
-  include_path <- file.path(ort_dir, "include")
+  
+  # Find include directory
+  include_dir <- file.path(expected_ort_dir, "include")
+  if (!dir.exists(include_dir)) {
+    # Search for include directory
+    found_includes <- list.dirs(expected_ort_dir, full.names = TRUE, recursive = FALSE)
+    include_dir <- found_includes[grepl("include", found_includes)]
+    if (length(include_dir) == 0) {
+      cat("Warning: Include directory not found\n")
+      include_dir <- file.path(expected_ort_dir, "include")
+    }
+  }
+  cat("Include directory:", include_dir, "\n")
+  
+  # Create include directory if it doesn't exist
+  if (!dir.exists(include_dir)) {
+    dir.create(include_dir, recursive = TRUE)
+  }
   
   # Verify library exists
   if (!file.exists(lib_path)) {
-    stop("ONNX Runtime library not found at expected path: ", lib_path)
+    stop("ONNX Runtime library not found at: ", lib_path)
   }
   
   cat("ONNX Runtime library found at:", lib_path, "\n")
   
   # Set environment variables
   Sys.setenv(ORT_DYLIB_PATH = normalizePath(lib_path))
-  Sys.setenv(ORT_INCLUDE_PATH = normalizePath(include_path))
-  Sys.setenv(ORT_LIB_PATH = normalizePath(file.path(ort_dir, "lib")))
+  Sys.setenv(ORT_INCLUDE_PATH = normalizePath(include_dir))
+  Sys.setenv(ORT_LIB_PATH = normalizePath(lib_dir))
   
   cat("Environment variables set:\n")
   cat("  ORT_DYLIB_PATH =", Sys.getenv("ORT_DYLIB_PATH"), "\n")
@@ -189,7 +231,6 @@ download_onnx_runtime <- function() {
   cat("  ORT_LIB_PATH =", Sys.getenv("ORT_LIB_PATH"), "\n")
   
   # Copy to inst directory for package installation
-  # This ensures the library is included in the installed package
   cat("Copying ONNX Runtime to inst directory...\n")
   inst_lib_dir <- file.path("inst", "onnxruntime", "lib")
   inst_inc_dir <- file.path("inst", "onnxruntime", "include")
@@ -197,24 +238,37 @@ download_onnx_runtime <- function() {
   if (!dir.exists(inst_lib_dir)) dir.create(inst_lib_dir, recursive = TRUE)
   if (!dir.exists(inst_inc_dir)) dir.create(inst_inc_dir, recursive = TRUE)
   
-  # Copy files - use file.copy with recursive=TRUE for directories if needed
-  # but here we copy contents of lib/ and include/
-  file.copy(list.files(file.path(ort_dir, "lib"), full.names = TRUE), inst_lib_dir, recursive = TRUE)
-  file.copy(list.files(file.path(ort_dir, "include"), full.names = TRUE), inst_inc_dir, recursive = TRUE)
+  # Copy library files
+  if (dir.exists(lib_dir)) {
+    lib_files <- list.files(lib_dir, full.names = TRUE)
+    if (length(lib_files) > 0) {
+      file.copy(lib_files, inst_lib_dir, recursive = TRUE)
+      cat("Copied", length(lib_files), "library files to", inst_lib_dir, "\n")
+    }
+  }
+  
+  # Copy include files
+  if (dir.exists(include_dir)) {
+    inc_files <- list.files(include_dir, full.names = TRUE, recursive = TRUE)
+    if (length(inc_files) > 0) {
+      file.copy(inc_files, inst_inc_dir, recursive = TRUE)
+      cat("Copied", length(inc_files), "include files to", inst_inc_dir, "\n")
+    }
+  }
   
   # Write src/ort_config.env for Makevars
   cat("Writing src/ort_config.env...\n")
   config_content <- c(
     paste0('export ORT_DYLIB_PATH="', normalizePath(lib_path), '"'),
-    paste0('export ORT_INCLUDE_PATH="', normalizePath(include_path), '"'),
-    paste0('export ORT_LIB_PATH="', normalizePath(file.path(ort_dir, "lib")), '"')
+    paste0('export ORT_INCLUDE_PATH="', normalizePath(include_dir), '"'),
+    paste0('export ORT_LIB_PATH="', normalizePath(lib_dir), '"')
   )
   writeLines(config_content, "src/ort_config.env")
   
   return(list(
     lib_path = lib_path,
-    include_path = include_path,
-    ort_dir = ort_dir
+    include_path = include_dir,
+    ort_dir = expected_ort_dir
   ))
 }
 

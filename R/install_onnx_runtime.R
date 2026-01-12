@@ -30,7 +30,7 @@ install_onnx_runtime <- function(version = "1.23.0", quiet = FALSE, ...) {
 
   # Determine download URL
   ort_version <- if (identical(tolower(version), "latest")) {
-    "1.23.0"  # Default to known working version for now
+    "1.23.2"  # Default to known working version for now
   } else {
     version
   }

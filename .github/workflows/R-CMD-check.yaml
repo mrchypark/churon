@@ -28,7 +28,7 @@ jobs:
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       R_KEEP_PKG_SOURCE: yes
-      ORT_VERSION: 1.23.0
+      ORT_VERSION: 1.23.2
 
     steps:
       - uses: actions/checkout@v4
