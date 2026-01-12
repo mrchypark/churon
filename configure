@@ -6,14 +6,13 @@ set -e
 
 echo "Configuring churon package..."
 
-# Check for Rscript
-if command -v Rscript >/dev/null 2>&1; then
-    RSCRIPT="Rscript"
-elif [ -n "$R_HOME" ] && [ -f "$R_HOME/bin/Rscript" ]; then
+# Use R's own script to find Rscript - follows R CMD config guidelines
+# This ensures we use the correct Rscript for the current R installation
+if [ -n "$R_HOME" ] && [ -f "$R_HOME/bin/Rscript" ]; then
     RSCRIPT="$R_HOME/bin/Rscript"
 else
-    echo "Error: Rscript not found. Cannot configure."
-    exit 1
+    # Fallback: find Rscript in PATH
+    RSCRIPT="`R RHOME`/bin/Rscript"
 fi
 
 echo "Running tools/download-ort.R..."
