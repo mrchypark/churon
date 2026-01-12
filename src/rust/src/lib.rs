@@ -188,7 +188,7 @@ impl RSession {
             .collect();
 
         self.output_info_cache = Some(tensor_infos.clone());
-        List::from_values(tensor_infos)
+        Ok(List::from_values(tensor_infos))
         }
     }
 
