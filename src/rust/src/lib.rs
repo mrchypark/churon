@@ -396,7 +396,8 @@ impl RSession {
     ) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
-            Ok(List::from_values(vec![]))
+            // On wasm, ort is not available, so return empty list
+            Ok(List::from_values(Vec::<Robj>::new()))
         }
 
         #[cfg(not(target_arch = "wasm32"))]
