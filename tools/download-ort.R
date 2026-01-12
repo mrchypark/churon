@@ -29,35 +29,41 @@ download_onnx_runtime <- function() {
   )
   
   # Normalize architecture names
+  # Note: ONNX Runtime uses "aarch64" for Linux ARM64, not "arm64"
   if (arch == "wasm32" || platform == "Emscripten") {
     cat("WASM/Emscripten detected. Skipping ONNX Runtime download (handled by web runtime).\n")
     return(NULL)
   }
 
-  arch_name <- switch(arch,
-    "x86_64" = "x64",
-    "x86-64" = "x64",
-    "amd64" = "x64",
-    "arm64" = "arm64",
-    "aarch64" = "arm64",
+  # ONNX Runtime specific arch names
+  if (platform == "Linux" && (arch == "arm64" || arch == "aarch64")) {
+    ort_arch <- "aarch64"
+  } else if (platform == "Linux") {
+    ort_arch <- "x64"
+  } else if (platform == "Darwin" && arch == "arm64") {
+    ort_arch <- "arm64"
+  } else if (platform == "Darwin") {
+    ort_arch <- "x86_64"
+  } else if (platform == "Windows" && (arch == "arm64" || arch == "aarch64")) {
+    ort_arch <- "arm64"
+  } else if (platform == "Windows") {
+    ort_arch <- "x64"
+  } else {
     stop("Unsupported architecture: ", arch)
-  )
+  }
   
-  cat("Detected platform:", platform_name, "-", arch_name, "\n")
+  cat("Detected platform:", platform_name, "- ONNX arch:", ort_arch, "\n")
   
   # Construct download URL and filename
-  if (platform_name == "osx" && arch_name == "arm64") {
+  if (platform_name == "osx" && ort_arch == "arm64") {
     archive_name <- paste0("onnxruntime-osx-arm64-", ort_version, ".tgz")
   } else if (platform_name == "osx") {
     archive_name <- paste0("onnxruntime-osx-x86_64-", ort_version, ".tgz")
   } else if (platform_name == "win") {
-    if (arch_name == "arm64") {
-      archive_name <- paste0("onnxruntime-win-arm64-", ort_version, ".zip")
-    } else {
-      archive_name <- paste0("onnxruntime-win-x64-", ort_version, ".zip")
-    }
+    archive_name <- paste0("onnxruntime-win-", ort_arch, "-", ort_version, ".zip")
   } else {
-    archive_name <- paste0("onnxruntime-linux-", arch_name, "-", ort_version, ".tgz")
+    # Linux: uses aarch64 for ARM64
+    archive_name <- paste0("onnxruntime-linux-", ort_arch, "-", ort_version, ".tgz")
   }
   
   download_url <- paste0("https://github.com/microsoft/onnxruntime/releases/download/v", 
@@ -69,8 +75,8 @@ download_onnx_runtime <- function() {
     dir.create(tools_dir, recursive = TRUE)
   }
   
-  # Set up paths
-  expected_ort_dir <- file.path(tools_dir, paste0("onnxruntime-", platform_name, "-", arch_name, "-", ort_version))
+  # Set up paths - use ort_arch for directory naming
+  expected_ort_dir <- file.path(tools_dir, paste0("onnxruntime-", platform_name, "-", ort_arch, "-", ort_version))
   archive_path <- file.path(tools_dir, archive_name)
   
   # Check if ONNX Runtime is already downloaded and valid
@@ -94,7 +100,7 @@ download_onnx_runtime <- function() {
   }
   
   if (need_download) {
-    cat("Downloading ONNX Runtime", ort_version, "for", platform_name, "-", arch_name, "\n")
+    cat("Downloading ONNX Runtime", ort_version, "for", platform_name, "-", ort_arch, "\n")
     cat("URL:", download_url, "\n")
     
     # Download with error handling
