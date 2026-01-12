@@ -21,9 +21,9 @@ pub struct ExecutionProviderDispatch;
 
 use std::collections::HashMap;
 use std::fmt;
-use std::path::Path;
 use std::sync::Once;
 
+#[cfg(not(target_arch = "wasm32"))]
 static ORT_INIT: Once = Once::new();
 
 #[derive(Debug, Clone)]
@@ -106,6 +106,7 @@ pub type ChurOnResult<T> = std::result::Result<T, ChurOnError>;
 
 #[extendr]
 pub struct RSession {
+    #[cfg(not(target_arch = "wasm32"))]
     pub session: Session,
     pub input_names: Vec<String>,
     pub output_names: Vec<String>,
@@ -113,7 +114,9 @@ pub struct RSession {
     pub output_shapes: Vec<Vec<i64>>,
     pub providers: Vec<String>,
     pub model_path: String,
+    #[cfg(not(target_arch = "wasm32"))]
     input_info_cache: Option<Vec<TensorInfo>>,
+    #[cfg(not(target_arch = "wasm32"))]
     output_info_cache: Option<Vec<TensorInfo>>,
 }
 
@@ -200,7 +203,7 @@ impl RSession {
         self.model_path.clone()
     }
 
-    fn run(&mut self, inputs: List) -> extendr_api::Result<List> {
+    fn run(&mut self, _inputs: List) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
             // Return empty list for WASM - ort crate not available on wasm
@@ -229,7 +232,9 @@ impl RSession {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl RSession {
+    #[allow(dead_code)]
     fn validate_session(&self) -> ChurOnResult<()> {
         if self.input_names.is_empty() {
             return Err(ChurOnError::Validation(
@@ -341,7 +346,7 @@ impl RSession {
 
     fn convert_to_ort_values(
         &self,
-        input_data: (HashMap<String, ArrayD<f32>>, HashMap<String, Vec<String>>),
+        _input_data: (HashMap<String, ArrayD<f32>>, HashMap<String, Vec<String>>),
     ) -> ChurOnResult<HashMap<String, Value>> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -351,7 +356,7 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        let (numeric_tensors, string_tensors) = input_data;
+        let (numeric_tensors, string_tensors) = _input_data;
         let mut values: HashMap<String, Value> = HashMap::new();
 
         // Handle numeric tensors
@@ -391,8 +396,8 @@ impl RSession {
     }
 
     fn extract_outputs(
-        outputs: SessionOutputs,
-        output_names: &[String],
+        _outputs: SessionOutputs,
+        _output_names: &[String],
     ) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -455,8 +460,8 @@ impl RSession {
 
 impl RSession {
     fn from_path_with_providers_internal(
-        path: &str,
-        providers: Option<Vec<String>>,
+        _path: &str,
+        _providers: Option<Vec<String>>,
     ) -> extendr_api::Result<Self> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -549,7 +554,7 @@ impl RSession {
     }
 
     fn get_execution_providers(
-        providers: Option<Vec<String>>,
+        _providers: Option<Vec<String>>,
     ) -> ChurOnResult<Vec<ExecutionProviderDispatch>> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -557,7 +562,7 @@ impl RSession {
         }
 
         #[cfg(not(target_arch = "wasm32"))]
-        match providers {
+        match _providers {
             Some(provider_names) => {
                 let mut execution_providers = Vec::new();
                 let mut has_cpu = false;
