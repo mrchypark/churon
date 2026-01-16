@@ -2,10 +2,8 @@
 ^\.Rproj\.user$
 ^\.git$
 ^\.gitignore$
-^\.kiro$
 ^README\.md$
 ^NEWS\.md$
-^src/rust/\.devcontainer$
 ^src/rust/target$
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
@@ -19,5 +17,3 @@
 ^LICENSE\.md$
 ^cran-comments\.md$
 ^inst/onnxruntime$
-^tools/
-^\.sisyphus$
