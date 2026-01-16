@@ -14,13 +14,10 @@
 <url><loc>/reference/get_onnx_runtime_info.html</loc></url>
 <url><loc>/reference/index.html</loc></url>
 <url><loc>/reference/install_onnx_runtime.html</loc></url>
-<url><loc>/reference/onnx_download_model.html</loc></url>
-<url><loc>/reference/onnx_download_models.html</loc></url>
 <url><loc>/reference/onnx_example_models.html</loc></url>
 <url><loc>/reference/onnx_example_session.html</loc></url>
 <url><loc>/reference/onnx_input_info.html</loc></url>
 <url><loc>/reference/onnx_model_path.html</loc></url>
-<url><loc>/reference/onnx_model_zoo_models.html</loc></url>
 <url><loc>/reference/onnx_output_info.html</loc></url>
 <url><loc>/reference/onnx_providers.html</loc></url>
 <url><loc>/reference/onnx_run.html</loc></url>
