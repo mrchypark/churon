@@ -339,38 +339,26 @@ onnx_model_path <- function(session) {
 #' @return A list containing runtime information
 #' @export
 get_onnx_runtime_info <- function() {
-  tryCatch({
-    session <- RSession$from_path(system.file("model", package = "churon"))
-    result <- session$get_model_path()
-    return(list(
-      version = "2.0.0-rc.11 (ort crate)",
-      model_path = result,
-      available = TRUE
-    ))
-  }, error = function(e) {
-    return(list(
-      version = NA,
-      model_path = NA,
-      available = FALSE,
-      error = e$message
-    ))
-  })
+  churon::get_onnx_runtime_info()
 }
 
 #' Check ONNX Runtime Available
+#' Check ONNX Runtime Available
 #'
-#' Check if ONNX Runtime is available.
+#' Check if ONNX Runtime is available and print status.
 #'
 #' @return Logical indicating whether ONNX Runtime is available
 #' @export
 check_onnx_runtime_available <- function() {
-  info <- get_onnx_runtime_info()
-  
-  if (is.null(info$error) && info$available) {
+  result <- churon::check_onnx_runtime_available()
+
+  if (result) {
     cat("ONNX Runtime is available!\n")
   } else {
-    warning("ONNX Runtime check failed: ", info$error)
+    warning("ONNX Runtime is not available. Run install_onnx_runtime() to install.")
   }
+
+  invisible(result)
 }
 
 #' Optimize Session Performance
@@ -491,35 +479,6 @@ find_model_path <- function(model_name) {
   return(model_name)
 }
 
-#' ONNX Download Model
-#'
-#' Download a model from the ONNX Model Zoo.
-#'
-#' @param name Character string specifying the model name
-#' @param url Character string specifying the download URL
-#' @return Character string with the path to the downloaded model
-#' @export
-onnx_download_model <- function(name, url) {
-  dest <- paste0(name, ".onnx")
-  if (!file.exists(dest)) {
-    download.file(url, dest, mode = "wb")
-  }
-  return(dest)
-}
-
-#' ONNX Download Models
-#'
-#' List available models from the ONNX Model Zoo.
-#'
-#' @param subset Character string specifying the model subset (vision, text, etc.)
-#' @return A named character vector of available models
-#' @export
-onnx_download_models <- function(subset = "vision") {
-  # Return empty vector - ONNX Model Zoo models can be downloaded from their GitHub repository
-  # https://github.com/onnx/models
-  return(character(0))
-}
-
 #' ONNX Example Models
 #'
 #' List available example models bundled with the package.
@@ -563,14 +522,4 @@ onnx_example_session <- function(model_name = "mnist", providers = NULL) {
   }
 
   onnx_session(model_path[1], providers = providers)
-}
-
-#' ONNX Model Zoo Models
-#'
-#' List available models from the ONNX Model Zoo.
-#'
-#' @return A character vector of available models
-#' @export
-onnx_model_zoo_models <- function() {
-  return(character(0))
 }

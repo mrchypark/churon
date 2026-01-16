@@ -1,6 +1,6 @@
 Package: churon
 Title: ONNX Runtime Integration for R
-Version: 0.1.8
+Version: 0.1.9
 Author: Chanyub Park [aut, cre] (<https://orcid.org/0000-0001-6474-2570>)
 Maintainer: Chanyub Park <mrchypark@gmail.com>
 Authors@R: person(given = "Chanyub",
@@ -8,11 +8,11 @@ Authors@R: person(given = "Chanyub",
            role = c("aut","cre"),
            email = "mrchypark@gmail.com",
            comment = c(ORCID = "0000-0001-6474-2570"))
-Description: Provides high-performance R bindings for 'ONNX' Runtime, enabling
+Description: Provides high-performance R bindings for "ONNX" Runtime, enabling
     efficient machine learning model inference. Written in Rust for memory safety
     and speed, the package supports cross-platform model execution with multiple
     execution providers. Includes comprehensive error handling and validation,
-    with bundled MNIST example model for immediate testing and prototyping.
+    with bundled "MNIST" example model for immediate testing and prototyping.
     Designed for production use with support for macOS (arm64/x64), Linux (x64/arm64),
     and Windows (x64/arm64).
 License: MIT + file LICENSE

@@ -465,22 +465,46 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
+        // Check if ONNX Runtime library is available before attempting to initialize
+        // This prevents panics in the ort crate when the library is missing
+        let dylib_path = std::env::var("ORT_DYLIB_PATH")
+            .ok()
+            .filter(|p| !p.is_empty());
+
+        // If ORT_DYLIB_PATH is not set, try to find the library in common locations
+        let dylib_path = if let Some(path) = dylib_path {
+            path
+        } else {
+            // Try to find the library in the package installation directory
+            // This is the default location used by install_onnx_runtime()
+            let pkg_path = std::env::var("R_PACKAGE_DIR").ok()
+                .or_else(|| std::env::var("R_LIBS_USER").ok())
+                .unwrap_or_default();
+
+            let lib_path = if !pkg_path.is_empty() {
+                format!("{}/churon/onnxruntime/lib/onnxruntime.dll", pkg_path)
+            } else {
+                // Fallback: try to load from system path
+                "onnxruntime.dll".to_string()
+            };
+
+            if std::path::Path::new(&lib_path).exists() {
+                lib_path
+            } else {
+                // Library not found - return error instead of panicking
+                return Err(extendr_api::Error::EvalError(
+                    "ONNX Runtime library not found. Please run install_onnx_runtime() to download it.".into(),
+                ));
+            }
+        };
+
         // Use Once to ensure ort initialization happens only once
         // This prevents mutex poisoning when called concurrently
         ORT_INIT.call_once(|| {
-            // Try to get ORT_DYLIB_PATH from environment
-            let dylib_path = std::env::var("ORT_DYLIB_PATH")
-                .ok()
-                .filter(|p| !p.is_empty());
-
             // Initialize ONNX Runtime with panic recovery
             // ort::init_from() may panic if library is invalid, so we catch it
             let init_result = std::panic::catch_unwind(|| {
-                if let Some(path) = dylib_path {
-                    ort::init_from(path).commit()
-                } else {
-                    ort::init().commit()
-                }
+                ort::init_from(&dylib_path).commit()
             });
 
             // Log any initialization errors but don't panic
@@ -497,6 +521,9 @@ impl RSession {
                 }
             }
         });
+
+        // Check if ONNX Runtime was initialized successfully
+        // If initialization failed, we can't proceed
         let execution_providers = Self::get_execution_providers(providers)?;
         let session = Session::builder()
             .map_err(|e| {

@@ -203,18 +203,6 @@ onnx_runtime_is_installed <- function() {
   return(file.exists(lib_path))
 }
 
-#' Check if ONNX Runtime is Installed
-#'
-#' Check if the ONNX Runtime library is installed and available.
-#'
-#' @return Logical indicating whether ONNX Runtime is installed.
-#' @export
-#' @keywords internal
-onnx_runtime_is_installed <- function() {
-  lib_path <- onnx_runtime_lib_path()
-  return(file.exists(lib_path))
-}
-
 #' Get ONNX Runtime Library Path
 #'
 #' Get the path to the ONNX Runtime library for the current platform.
@@ -237,61 +225,7 @@ onnx_runtime_lib_path <- function() {
 
 #' Setup ONNX Runtime
 #'
-#' Internal function to set up ONNX Runtime when the package is loaded.
-#' Checks if ONNX Runtime is installed and guides user if not.
-#'
 #' @keywords internal
 setup_onnx_runtime <- function() {
-  lib_path <- onnx_runtime_lib_path()
-
-  if (!file.exists(lib_path)) {
-    # ONNX Runtime not found - set up guidance message
-    if (interactive()) {
-      message("")
-      message("============================================================")
-      message("ONNX Runtime is not installed for churon package.")
-      message("")
-      message("To install, run:")
-      message("  install_onnx_runtime()")
-      message("")
-      message("Or download manually from:")
-      message("  https://github.com/microsoft/onnxruntime/releases")
-      message("============================================================")
-      message("")
-    }
-
-    # Set environment variable to help with error messages
-    Sys.setenv(ORT_DYLIB_PATH = "")
-    return(FALSE)
-  }
-
-  # Set environment variable
-  Sys.setenv(ORT_DYLIB_PATH = normalizePath(lib_path))
-
-  # Add to library path
-  lib_dir <- dirname(lib_path)
-
-  if (platform == "Darwin") {
-    current_path <- Sys.getenv("DYLD_LIBRARY_PATH", unset = "")
-    if (nchar(current_path) > 0) {
-      new_path <- paste(lib_dir, current_path, sep = ":")
-    } else {
-      new_path <- lib_dir
-    }
-    Sys.setenv(DYLD_LIBRARY_PATH = new_path)
-  } else if (platform == "Linux") {
-    current_path <- Sys.getenv("LD_LIBRARY_PATH", unset = "")
-    if (nchar(current_path) > 0) {
-      new_path <- paste(lib_dir, current_path, sep = ":")
-    } else {
-      new_path <- lib_dir
-    }
-    Sys.setenv(LD_LIBRARY_PATH = new_path)
-  } else if (platform == "Windows") {
-    current_path <- Sys.getenv("PATH", unset = "")
-    new_path <- paste(lib_dir, current_path, sep = ";")
-    Sys.setenv(PATH = new_path)
-  }
-
-  TRUE
+  churon::setup_onnx_runtime()
 }

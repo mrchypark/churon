@@ -46,6 +46,6 @@ test_that("package metadata is correct", {
 
   expect_equal(desc$Package, "churon")
   expect_match(desc$Title, "ONNX Runtime")
-  expect_match(desc$Description, "ONNX Runtime")
+  expect_match(desc$Description, "ONNX")  # Check for ONNX mention
   expect_equal(desc$License, "MIT + file LICENSE")
 })

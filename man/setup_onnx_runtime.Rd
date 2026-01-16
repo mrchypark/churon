@@ -12,9 +12,6 @@ setup_onnx_runtime()
 Logical indicating whether setup was successful
 }
 \description{
-Internal function to set up ONNX Runtime when the package is loaded.
-Checks if ONNX Runtime is installed and guides user if not.
-
 This function sets up the ONNX Runtime library path for the current session.
 It looks for the ONNX Runtime library in the package installation directory.
 }

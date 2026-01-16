@@ -2,6 +2,7 @@
 
 .onLoad <- function(libname, pkgname) {
   # Set up ONNX Runtime library path when package is loaded
+  # If library is not found, ORT_DYLIB_PATH will be empty and Rust will handle gracefully
   setup_onnx_runtime()
 }
 

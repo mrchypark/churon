@@ -5,17 +5,11 @@
 \title{Check if ONNX Runtime is Installed}
 \usage{
 onnx_runtime_is_installed()
-
-onnx_runtime_is_installed()
 }
 \value{
 Logical indicating whether ONNX Runtime is installed.
-
-Logical indicating whether ONNX Runtime is installed.
 }
 \description{
-Check if the ONNX Runtime library is installed and available.
-
 Check if the ONNX Runtime library is installed and available.
 }
 \keyword{internal}

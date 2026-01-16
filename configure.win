@@ -48,26 +48,24 @@ mkdir -p "${TARGET_DIR}/include"
 # It might be in root, bin/, or lib/ of the extracted folder
 DLL_FOUND=0
 
-# Check lib/
-if [ -f "${EXTRACTED_DIR}/lib/onnxruntime.dll" ]; then
-  cp "${EXTRACTED_DIR}/lib/onnxruntime.dll" "${TARGET_DIR}/lib/"
+# Copy ALL DLLs from lib/ directory
+if [ -d "${EXTRACTED_DIR}/lib" ]; then
+  cp "${EXTRACTED_DIR}/lib/"*.dll "${TARGET_DIR}/lib/" 2>/dev/null || true
+  cp "${EXTRACTED_DIR}/lib/"*.pdb "${TARGET_DIR}/lib/" 2>/dev/null || true
   DLL_FOUND=1
-elif [ -f "${EXTRACTED_DIR}/bin/onnxruntime.dll" ]; then
-  cp "${EXTRACTED_DIR}/bin/onnxruntime.dll" "${TARGET_DIR}/lib/"
-  DLL_FOUND=1
-elif [ -f "${EXTRACTED_DIR}/onnxruntime.dll" ]; then
-  cp "${EXTRACTED_DIR}/onnxruntime.dll" "${TARGET_DIR}/lib/"
-  DLL_FOUND=1
+  echo "Copied all DLLs from lib/"
+fi
+
+# Also check bin/ for additional DLLs
+if [ -d "${EXTRACTED_DIR}/bin" ]; then
+  cp "${EXTRACTED_DIR}/bin/"*.dll "${TARGET_DIR}/lib/" 2>/dev/null || true
+  cp "${EXTRACTED_DIR}/bin/"*.pdb "${TARGET_DIR}/lib/" 2>/dev/null || true
+  echo "Copied all DLLs from bin/"
 fi
 
 if [ $DLL_FOUND -eq 0 ]; then
-  echo "Error: onnxruntime.dll not found in extracted archive."
+  echo "Error: No DLLs found in extracted archive."
   exit 1
-fi
-
-# Copy other lib files (like .lib for linking if needed)
-if [ -d "${EXTRACTED_DIR}/lib" ]; then
-  cp -r "${EXTRACTED_DIR}/lib/"* "${TARGET_DIR}/lib/"
 fi
 
 # Copy headers
