@@ -140,7 +140,7 @@ impl RSession {
             return Ok(List::from_values(cached_info.clone()));
         }
 
-        let inputs = self.session.inputs();
+        let inputs: Vec<_> = self.session.inputs.iter().collect();
         let tensor_infos: Vec<TensorInfo> = inputs
             .iter()
             .enumerate()
@@ -148,9 +148,9 @@ impl RSession {
                 let shape_i64 = self.input_shapes.get(i).cloned().unwrap_or_default();
                 let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
                 TensorInfo::new(
-                    input.name().to_string(),
+                    input.name.to_string(),
                     shape_i32,
-                    format!("{:?}", input.dtype()),
+                    format!("{:?}", input.input_type),
                 )
             })
             .collect();
@@ -172,7 +172,7 @@ impl RSession {
             return Ok(List::from_values(cached_info.clone()));
         }
 
-        let outputs = self.session.outputs();
+        let outputs: Vec<_> = self.session.outputs.iter().collect();
         let tensor_infos: Vec<TensorInfo> = outputs
             .iter()
             .enumerate()
@@ -180,9 +180,9 @@ impl RSession {
                 let shape_i64 = self.output_shapes.get(i).cloned().unwrap_or_default();
                 let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
                 TensorInfo::new(
-                    output.name().to_string(),
+                    output.name.to_string(),
                     shape_i32,
-                    format!("{:?}", output.dtype()),
+                    format!("{:?}", output.output_type),
                 )
             })
             .collect();
@@ -477,17 +477,17 @@ impl RSession {
             // ort::init_from() may panic if library is invalid, so we catch it
             let init_result = std::panic::catch_unwind(|| {
                 if let Some(path) = dylib_path {
-                    ort::init_from(path)
+                    ort::init_from(path).commit()
                 } else {
-                    Ok(ort::init())
+                    ort::init().commit()
                 }
             });
 
             // Log any initialization errors but don't panic
             // Let R handle the "not installed" case gracefully
             match init_result {
-                Ok(Ok(env)) => {
-                    let _ = env.commit();
+                Ok(Ok(_env)) => {
+                    // Environment initialized successfully
                 }
                 Ok(Err(e)) => {
                     extendr_api::rprintln!("Warning: ONNX Runtime initialization failed: {}", e);
@@ -516,15 +516,15 @@ impl RSession {
             .map_err(|e| {
                 ChurOnError::ModelLoad(format!("Failed to load model from {}: {}", path, e))
             })?;
-        let inputs = session.inputs();
-        let outputs = session.outputs();
+        let inputs: Vec<_> = session.inputs.iter().collect();
+        let outputs: Vec<_> = session.outputs.iter().collect();
         let input_names: Vec<String> = inputs
             .iter()
-            .map(|input| input.name().to_string())
+            .map(|input| input.name.to_string())
             .collect();
         let output_names: Vec<String> = outputs
             .iter()
-            .map(|output| output.name().to_string())
+            .map(|output| output.name.to_string())
             .collect();
         let input_shapes: Vec<Vec<i64>> = inputs
             .iter()
