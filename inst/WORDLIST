@@ -1,0 +1,13 @@
+# Custom dictionary for churon package spelling checks
+# Words listed here are considered correctly spelled
+
+CUDA
+CoreML
+MNIST
+ONNX
+OneDNN
+ONNXRuntime
+ONNXRuntimes
+ort
+churon
+extendr
