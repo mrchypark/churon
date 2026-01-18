@@ -25,7 +25,6 @@ test_that("exported functions are available", {
     "onnx_example_session",
 
     # Utility functions
-    "find_model_path",
     "get_onnx_runtime_info",
     "check_onnx_runtime_available",
     "safe_onnx_session",

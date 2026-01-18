@@ -1,6 +1,17 @@
 #' @importFrom utils download.file
 NULL
 
+# Internal validation helper functions
+.validate_session <- function(session) {
+  if (missing(session) || is.null(session)) {
+    stop("session is required and cannot be NULL")
+  }
+  if (!inherits(session, "RSession")) {
+    stop("session must be an RSession object created by onnx_session()")
+  }
+  invisible(TRUE)
+}
+
 #' Create ONNX Session
 #'
 #' Create a new ONNX Runtime session from a model file.
@@ -99,14 +110,7 @@ onnx_session <- function(model_path, providers = NULL) {
 #' outputs <- onnx_run(session, inputs)
 #' }
 onnx_run <- function(session, inputs) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
+  .validate_session(session)
   
   # Validate inputs parameter
   if (missing(inputs) || is.null(inputs)) {
@@ -203,14 +207,7 @@ onnx_run <- function(session, inputs) {
 #' print(input_info)
 #' }
 onnx_input_info <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
+  .validate_session(session)
   
   tryCatch({
     result <- session$get_input_info()
@@ -240,14 +237,7 @@ onnx_input_info <- function(session) {
 #' print(output_info)
 #' }
 onnx_output_info <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
+  .validate_session(session)
   
   tryCatch({
     result <- session$get_output_info()
@@ -277,14 +267,7 @@ onnx_output_info <- function(session) {
 #' cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
 #' }
 onnx_providers <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
+  .validate_session(session)
   
   tryCatch({
     result <- session$get_providers()
@@ -314,14 +297,7 @@ onnx_providers <- function(session) {
 #' cat("Model path:", model_path, "\n")
 #' }
 onnx_model_path <- function(session) {
-  # Validate session parameter
-  if (missing(session) || is.null(session)) {
-    stop("session is required and cannot be NULL")
-  }
-  
-  if (!inherits(session, "RSession")) {
-    stop("session must be an RSession object created by onnx_session()")
-  }
+  .validate_session(session)
   
   tryCatch({
     result <- session$get_model_path()
@@ -332,34 +308,7 @@ onnx_model_path <- function(session) {
   })
 }
 
-#' Get ONNX Runtime Info
-#'
-#' Get information about the ONNX Runtime installation.
-#'
-#' @return A list containing runtime information
-#' @export
-get_onnx_runtime_info <- function() {
-  churon::get_onnx_runtime_info()
-}
 
-#' Check ONNX Runtime Available
-#' Check ONNX Runtime Available
-#'
-#' Check if ONNX Runtime is available and print status.
-#'
-#' @return Logical indicating whether ONNX Runtime is available
-#' @export
-check_onnx_runtime_available <- function() {
-  result <- churon::check_onnx_runtime_available()
-
-  if (result) {
-    cat("ONNX Runtime is available!\n")
-  } else {
-    warning("ONNX Runtime is not available. Run install_onnx_runtime() to install.")
-  }
-
-  invisible(result)
-}
 
 #' Optimize Session Performance
 #' Batch Process Data
@@ -460,23 +409,6 @@ safe_onnx_session <- function(model_path, providers = NULL) {
     warning("Failed to create ONNX session: ", e$message)
     return(NULL)
   })
-}
-
-#' Find Model Path
-#'
-#' Find the full path to a model file, checking user paths.
-#'
-#' @param model_name Character string specifying the model name or path
-#' @return Character string with the full path to the model file
-#' @export
-find_model_path <- function(model_name) {
-  # If it's already a full path and exists, return it
-  if (file.exists(model_name)) {
-    return(normalizePath(model_name))
-  }
-  
-  # Return as-is (user must provide valid path)
-  return(model_name)
 }
 
 #' ONNX Example Models

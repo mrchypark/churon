@@ -51,11 +51,6 @@ test_that("convenience functions work correctly", {
     model_name <- names(models)[1]
     model_path <- models[1]
 
-    # Test find_model_path with full path
-    found_path <- find_model_path(model_path)
-    expect_true(file.exists(found_path))
-    expect_equal(normalizePath(found_path), normalizePath(model_path))
-
     # Test onnx_example_session
     expect_no_error({
       session <- onnx_example_session("mnist")

@@ -123,11 +123,6 @@ impl RSession {
         Self::from_path_with_providers_internal(path, None)
     }
 
-    pub fn check_input(&self) {
-        extendr_api::rprintln!("Input names: {:?}", &self.input_names);
-        extendr_api::rprintln!("Input shapes: {:?}", &self.input_shapes);
-    }
-
     pub fn get_input_info(&mut self) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -652,20 +647,6 @@ impl RSession {
 pub struct DataConverter;
 
 impl DataConverter {
-    pub fn r_to_ndarray_f32(r_data: Doubles, shape: &[usize]) -> ChurOnResult<ArrayD<f32>> {
-        let data: Vec<f32> = r_data.iter().map(|x| x.inner() as f32).collect();
-        let total_elements: usize = shape.iter().product();
-        if data.len() != total_elements {
-            return Err(ChurOnError::DataConversion(format!(
-                "Data length {} doesn't match shape {:?}",
-                data.len(),
-                shape
-            )));
-        }
-        ArrayD::from_shape_vec(IxDyn(shape), data)
-            .map_err(|e| ChurOnError::DataConversion(format!("Failed to create ndarray: {}", e)))
-    }
-
     /// Convert R object (vector, matrix, array) to ndarray f32
     pub fn r_obj_to_ndarray_f32(
         robj: &Robj,
@@ -711,20 +692,6 @@ impl DataConverter {
             .map_err(|e| ChurOnError::DataConversion(format!("Failed to create ndarray: {}", e)))
     }
 
-    pub fn r_to_ndarray_f64(r_data: Doubles, shape: &[usize]) -> ChurOnResult<ArrayD<f64>> {
-        let data: Vec<f64> = r_data.iter().map(|x| x.inner() as f64).collect();
-        let total_elements: usize = shape.iter().product();
-        if data.len() != total_elements {
-            return Err(ChurOnError::DataConversion(format!(
-                "Data length {} doesn't match shape {:?}",
-                data.len(),
-                shape
-            )));
-        }
-        ArrayD::from_shape_vec(IxDyn(shape), data)
-            .map_err(|e| ChurOnError::DataConversion(format!("Failed to create ndarray: {}", e)))
-    }
-
     pub fn ndarray_f32_to_r(array: ArrayD<f32>) -> ChurOnResult<Doubles> {
         let data: Vec<f64> = array.iter().map(|&x| x as f64).collect();
         Ok(Doubles::from_values(data))
@@ -756,16 +723,5 @@ mod tests {
         assert_eq!(tensor_info.get_name(), "test_tensor");
         assert_eq!(tensor_info.get_shape(), vec![2, 3, 4]);
         assert_eq!(tensor_info.get_data_type(), "Float32");
-    }
-
-    #[test]
-    fn test_data_converter_r_to_ndarray_f32() {
-        let test_data = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0];
-        let r_doubles = Doubles::from_values(test_data.clone());
-        let shape = vec![2, 3];
-        let result = DataConverter::r_to_ndarray_f32(r_doubles, &shape);
-        assert!(result.is_ok());
-        let array = result.unwrap();
-        assert_eq!(array.shape(), &[2, 3]);
     }
 }

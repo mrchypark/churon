@@ -223,9 +223,4 @@ onnx_runtime_lib_path <- function() {
   file.path(pkg_path, "onnxruntime", "lib", lib_name)
 }
 
-#' Setup ONNX Runtime
-#'
-#' @keywords internal
-setup_onnx_runtime <- function() {
-  churon::setup_onnx_runtime()
-}
+
