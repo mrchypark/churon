@@ -20,7 +20,7 @@ $(STATLIB):
 	
 	# Vendor setup: extract vendored crates and configure cargo
 	if [ -f ./rust/vendor.tar.xz ]; then \
-		tar -xf ./rust/vendor.tar.xz -C ./rust && \
+		tar -xf ./rust/vendor.tar.xz -C $(CURDIR) && \
 		mkdir -p $(CARGOTMP) && \
 		cp ./rust/vendor-config.toml $(CARGOTMP)/config.toml; \
 	fi
