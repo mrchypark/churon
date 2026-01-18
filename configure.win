@@ -5,7 +5,7 @@
 
 echo "Running configure.win..."
 
-ORT_VERSION="1.23.0"
+ORT_VERSION="1.23.2"
 ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/onnxruntime-win-x64-${ORT_VERSION}.zip"
 ORT_FILE="ort.zip"
 TARGET_DIR="inst/onnxruntime"
