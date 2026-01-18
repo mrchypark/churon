@@ -145,3 +145,49 @@ jobs:
       - uses: r-lib/actions/check-r-package@v2
         with:
           error-on: '"error"'
+
+  R-CMD-check-no-ort:
+    runs-on: ${{ matrix.config.os }}
+
+    name: ${{ matrix.config.os }} (no-ort)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: macos-latest,   r: 'release'}
+          - {os: macos-15,       r: 'release'}
+          - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest,  r: 'release'}
+
+    env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      R_KEEP_PKG_SOURCE: yes
+      # NO ORT_VERSION set - simulates CRAN offline environment
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          http-user-agent: ${{ matrix.config.http-user-agent }}
+          use-public-rspm: true
+
+      # NO ONNX Runtime installation step - tests skip logic
+
+      - name: Install dependencies
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::rextendr
+          needs: check
+
+      - name: Vendor Rust Dependencies
+        run: |
+          # Vendor Rust dependencies for CRAN compliance
+          Rscript -e "rextendr::vendor_pkgs()"
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          error-on: '"error"'
