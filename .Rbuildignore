@@ -4,6 +4,7 @@
 ^\.gitignore$
 ^README\.md$
 ^NEWS\.md$
+^src/rust/.devcontainer$
 ^src/rust/target$
 ^.*\.Rcheck$
 ^.*\.tar\.gz$
