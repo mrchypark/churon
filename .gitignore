@@ -30,12 +30,13 @@ src/rust/target/
 src/rust/Cargo.lock
 src/.cargo/
 
+# Vendor 디렉토리 (빌드 시 자동 추출됨)
+src/vendor/
+
 # 임시 파일들
 *.tmp
 *.temp
 *~
-
-# macOS 파일들
 .DS_Store
 .AppleDouble
 .LSOverride
