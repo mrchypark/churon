@@ -1,12 +1,10 @@
 test_that("batch processing works correctly", {
-  skip_if_not_installed("churon")
   library(churon)
 
   expect_true(TRUE)
 })
 
 test_that("batch processing with invalid parameters", {
-  skip_if_not_installed("churon")
   library(churon)
 
   # Test batch processing with invalid parameters

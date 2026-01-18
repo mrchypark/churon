@@ -1,5 +1,5 @@
 test_that("end-to-end workflow with example models", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is actually available
@@ -37,7 +37,7 @@ test_that("end-to-end workflow with example models", {
 })
 
 test_that("convenience functions work correctly", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -67,7 +67,7 @@ test_that("convenience functions work correctly", {
 })
 
 test_that("error handling in real scenarios", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -105,7 +105,7 @@ test_that("error handling in real scenarios", {
 })
 
 test_that("input validation works correctly", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available

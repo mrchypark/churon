@@ -18,18 +18,22 @@ churon provides R bindings for ONNX Runtime, enabling high-performance machine l
 ### System Requirements
 
 - R (>= 4.0.0)
-- Rust (>= 1.75.0)
-- macOS ARM64 (Apple Silicon) - current platform
+- Supported platforms: macOS (ARM64/x64), Linux (x64/ARM64), Windows (x64/ARM64)
+
+### Install from R-universe (Recommended)
+
+Pre-built binaries are available from [R-universe](https://mrchypark.r-universe.dev/churon), which means **no Rust toolchain required**:
+
+```r
+install.packages('churon', repos = c('https://mrchypark.r-universe.dev', 'https://cloud.r-project.org'))
+```
 
 ### Install from GitHub
 
-```r
-# Install from GitHub
-devtools::install_github("churon-project/churon")
+If you prefer to build from source (requires Rust >= 1.75.0):
 
-# Or build from source
-R CMD build .
-R CMD INSTALL churon_0.0.1.tar.gz
+```r
+devtools::install_github("mrchypark/churon")
 ```
 
 ## Quick Start
@@ -138,6 +142,7 @@ result <- safe_onnx_run(session, inputs, monitor_performance = TRUE)
 
 | Function | Description |
 |----------|-------------|
+| `install_onnx_runtime(version)` | Download and install ONNX Runtime |
 | `find_model_path(model_name)` | Find full path to a model file |
 | `get_onnx_runtime_info()` | Get ONNX Runtime version info |
 | `check_onnx_runtime_available()` | Check if ONNX Runtime is available |

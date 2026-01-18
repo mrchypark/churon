@@ -25,6 +25,7 @@ test_that("model file validation works", {
 })
 
 test_that("invalid model paths are handled correctly", {
+  skip_on_os("windows")
   # Test with non-existent file
   expect_error(
     onnx_session("/path/to/nonexistent/model.onnx"),

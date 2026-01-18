@@ -5,7 +5,7 @@
 #' is not already installed on your system.
 #'
 #' @param version Character string specifying the ONNX Runtime version to install.
-#'   Defaults to "1.23.0". Use "latest" to download the latest stable version.
+#'   Defaults to "1.23.2". Use "latest" to download the latest stable version.
 #' @param quiet Logical. If TRUE, suppress download progress messages.
 #' @param ... Additional arguments passed to download.file()
 #'
@@ -22,7 +22,7 @@
 #' # Install with no output
 #' install_onnx_runtime(quiet = TRUE)
 #' }
-install_onnx_runtime <- function(version = "1.23.0", quiet = FALSE, ...) {
+install_onnx_runtime <- function(version = "1.23.2", quiet = FALSE, ...) {
   # Platform detection
   platform <- Sys.info()[["sysname"]]
   machine <- Sys.info()[["machine"]]
@@ -129,13 +129,13 @@ install_onnx_runtime <- function(version = "1.23.0", quiet = FALSE, ...) {
     )
 
     # Search for library file recursively
-    found_lib <- list.files(extracted_dir, pattern = paste0("^", lib_filename, "$"), 
+    found_lib <- list.files(extracted_dir, pattern = paste0("^", lib_filename, "$"),
                            recursive = TRUE, full.names = TRUE)
-    
+
     if (length(found_lib) > 0) {
       # Use the first match (usually the one in lib/ or root)
       file.copy(found_lib[1], file.path(lib_dir, lib_filename), overwrite = TRUE)
-      
+
       # Also try to copy other contents of lib/ if it exists
       lib_src_dir <- file.path(extracted_dir, "lib")
       if (dir.exists(lib_src_dir)) {

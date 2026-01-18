@@ -17,6 +17,14 @@ CARGOTMP = $(CURDIR)/.cargo
 $(STATLIB):
 	# Check rustc version
 	rustc --version
+	
+	# Vendor setup: extract vendored crates and configure cargo
+	if [ -f ./rust/vendor.tar.xz ]; then \
+		tar -xf ./rust/vendor.tar.xz -C ./rust && \
+		mkdir -p $(CARGOTMP) && \
+		cp ./rust/vendor-config.toml $(CARGOTMP)/config.toml; \
+	fi
+	
 	mkdir -p $(TARGET_DIR)/libgcc_mock
 	# `rustc` adds `-lgcc_eh` flags to the compiler, but Rtools' GCC doesn't have
 	# `libgcc_eh` due to the compilation settings. So, in order to please the
@@ -37,7 +45,11 @@ $(STATLIB):
 		export CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER="$(CARGO_LINKER)" && \
 		export LIBRARY_PATH="${LIBRARY_PATH};$(CURDIR)/$(TARGET_DIR)/libgcc_mock" && \
 		if [ -f "ort_config.env" ]; then . ./ort_config.env; fi && \
-		cargo build --target=$(TARGET) --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
+		if [ -f ./rust/vendor.tar.xz ]; then \
+			cargo build --target=$(TARGET) --lib --release --offline --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+		else \
+			cargo build --target=$(TARGET) --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+		fi
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		rm -Rf $(CARGOTMP) && \
 		rm -Rf $(LIBDIR)/build; \

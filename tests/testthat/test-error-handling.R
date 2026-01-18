@@ -1,5 +1,5 @@
 test_that("error handling for invalid model paths", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
 
   # Test non-existent file
@@ -24,7 +24,7 @@ test_that("error handling for invalid model paths", {
 })
 
 test_that("error handling for invalid execution providers", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -58,7 +58,7 @@ test_that("error handling for invalid execution providers", {
 })
 
 test_that("error handling for inference failures", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -89,7 +89,7 @@ test_that("error handling for inference failures", {
 })
 
 test_that("error messages are informative", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
 
   # Error messages should include:

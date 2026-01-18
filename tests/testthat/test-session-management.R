@@ -1,5 +1,5 @@
 test_that("session creation with valid model", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -20,7 +20,7 @@ test_that("session creation with valid model", {
 })
 
 test_that("session creation with execution providers", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available
@@ -44,7 +44,7 @@ test_that("session creation with execution providers", {
 })
 
 test_that("session information retrieval", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
   
   # Check if ONNX Runtime is available

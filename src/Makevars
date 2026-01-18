@@ -12,9 +12,20 @@ $(SHLIB): $(STATLIB)
 
 CARGOTMP = $(CURDIR)/.cargo
 
+# Vendor config flags (set if vendor exists)
+VENDOR_FLAGS = 
+
 $(STATLIB):
 	# Check rustc version
 	rustc --version
+	
+	# Vendor setup: extract vendored crates and configure cargo
+	if [ -f ./rust/vendor.tar.xz ]; then \
+		tar -xf ./rust/vendor.tar.xz -C ./rust && \
+		mkdir -p $(CARGOTMP) && \
+		cp ./rust/vendor-config.toml $(CARGOTMP)/config.toml; \
+	fi
+	
 	# Load ONNX Runtime environment variables
 	if [ -f "ort_config.env" ]; then \
 		. ./ort_config.env; \
@@ -27,7 +38,11 @@ $(STATLIB):
 	fi && \
 		export PATH="$(PATH):$(HOME)/.cargo/bin" && \
 		if [ -f "ort_config.env" ]; then . ./ort_config.env; fi && \
-		cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
+		if [ -f ./rust/vendor.tar.xz ]; then \
+			cargo build --lib --release --offline --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+		else \
+			cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+		fi
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		rm -Rf $(CARGOTMP) && \
 		rm -Rf $(LIBDIR)/build; \

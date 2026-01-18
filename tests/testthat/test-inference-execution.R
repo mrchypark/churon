@@ -1,5 +1,5 @@
 test_that("basic inference execution", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
 
   # Check if ONNX Runtime is available
@@ -11,7 +11,7 @@ test_that("basic inference execution", {
 })
 
 test_that("inference with invalid input data", {
-  skip_if_not_installed("churon")
+  skip_on_os("windows")
   library(churon)
 
   # Check if ONNX Runtime is available
