@@ -15,6 +15,8 @@ $(SHLIB): $(STATLIB)
 CARGOTMP = $(CURDIR)/.cargo
 
 $(STATLIB):
+	# Check rustc version
+	rustc --version
 	mkdir -p $(TARGET_DIR)/libgcc_mock
 	# `rustc` adds `-lgcc_eh` flags to the compiler, but Rtools' GCC doesn't have
 	# `libgcc_eh` due to the compilation settings. So, in order to please the
