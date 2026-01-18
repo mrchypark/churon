@@ -86,19 +86,22 @@
 </h3>
 <ul>
 <li>R (&gt;= 4.0.0)</li>
-<li>Rust (&gt;= 1.75.0)</li>
-<li>macOS ARM64 (Apple Silicon) - current platform</li>
+<li>Supported platforms: macOS (ARM64/x64), Linux (x64/ARM64), Windows (x64/ARM64)</li>
 </ul>
+</div>
+<div class="section level3">
+<h3 id="install-from-r-universe-recommended">Install from R-universe (Recommended)<a class="anchor" aria-label="anchor" href="#install-from-r-universe-recommended"></a>
+</h3>
+<p>Pre-built binaries are available from <a href="https://mrchypark.r-universe.dev/churon" class="external-link">R-universe</a>, which means <strong>no Rust toolchain required</strong>:</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'churon'</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'https://mrchypark.r-universe.dev'</span>, <span class="st">'https://cloud.r-project.org'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
 </h3>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="co"># Install from GitHub</span></span>
-<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a>devtools<span class="sc">::</span><span class="fu">install_github</span>(<span class="st">"churon-project/churon"</span>)</span>
-<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="co"># Or build from source</span></span>
-<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a>R CMD build .</span>
-<span id="cb1-6"><a href="#cb1-6" tabindex="-1"></a>R CMD INSTALL churon_0.<span class="dv">0</span>.<span class="fl">1.</span>tar.gz</span></code></pre></div>
+<p>If you prefer to build from source (requires Rust &gt;= 1.75.0):</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"mrchypark/churon"</span><span class="op">)</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
@@ -107,7 +110,7 @@
 <div class="section level3">
 <h3 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Check available example models</span></span>
@@ -139,7 +142,7 @@
 <div class="section level3">
 <h3 id="using-custom-onnx-models">Using Custom ONNX Models<a class="anchor" aria-label="anchor" href="#using-custom-onnx-models"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Load any ONNX model</span></span>
@@ -157,7 +160,7 @@
 <div class="section level3">
 <h3 id="session-management">Session Management<a class="anchor" aria-label="anchor" href="#session-management"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Create session with default providers</span></span>
 <span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_session.html">onnx_session</a></span><span class="op">(</span><span class="st">"model.onnx"</span><span class="op">)</span></span>
 <span></span>
@@ -171,7 +174,7 @@
 <div class="section level3">
 <h3 id="safe-session-creation-with-error-handling">Safe Session Creation with Error Handling<a class="anchor" aria-label="anchor" href="#safe-session-creation-with-error-handling"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Safe session creation with automatic error handling</span></span>
 <span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/safe_onnx_session.html">safe_onnx_session</a></span><span class="op">(</span><span class="st">"model.onnx"</span><span class="op">)</span></span>
 <span></span>
@@ -263,22 +266,26 @@
 </tr></thead>
 <tbody>
 <tr class="odd">
+<td><code>install_onnx_runtime(version)</code></td>
+<td>Download and install ONNX Runtime</td>
+</tr>
+<tr class="even">
 <td><code>find_model_path(model_name)</code></td>
 <td>Find full path to a model file</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="reference/get_onnx_runtime_info.html">get_onnx_runtime_info()</a></code></td>
 <td>Get ONNX Runtime version info</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="reference/check_onnx_runtime_available.html">check_onnx_runtime_available()</a></code></td>
 <td>Check if ONNX Runtime is available</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td><code><a href="reference/safe_onnx_session.html">safe_onnx_session()</a></code></td>
 <td>Create session with error handling</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td><code><a href="reference/safe_onnx_run.html">safe_onnx_run()</a></code></td>
 <td>Run inference with error handling</td>
 </tr>
