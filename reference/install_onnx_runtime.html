@@ -43,7 +43,7 @@ is not already installed on your system."><!-- mathjax --><script src="https://c
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Install ONNX Runtime</h1>
-    <small class="dont-index">Source: <a href="https://github.com/mrchypark/churon/blob/v0.1.10/R/install_onnx_runtime.R" class="external-link"><code>R/install_onnx_runtime.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/mrchypark/churon/blob/main/R/install_onnx_runtime.R" class="external-link"><code>R/install_onnx_runtime.R</code></a></small>
     <div class="hidden name"><code>install_onnx_runtime.Rd</code></div>
     </div>
 
@@ -54,7 +54,7 @@ is not already installed on your system.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.23.2"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.29.0"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -63,7 +63,8 @@ is not already installed on your system.</p>
 
 <dl><dt id="arg-version">version<a class="anchor" aria-label="anchor" href="#arg-version"></a></dt>
 <dd><p>Character string specifying the ONNX Runtime version to install.
-Defaults to "1.23.2". Use "latest" to download the latest stable version.</p></dd>
+Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
+"latest" selects "1.29.0".</p></dd>
 
 
 <dt id="arg-quiet">quiet<a class="anchor" aria-label="anchor" href="#arg-quiet"></a></dt>
@@ -86,7 +87,7 @@ Defaults to "1.23.2". Use "latest" to download the latest stable version.</p></d
 <span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Install specific version</span></span></span>
-<span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.23.0"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.28.0"</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Install with no output</span></span></span>
 <span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
@@ -105,7 +106,7 @@ Defaults to "1.23.2". Use "latest" to download the latest stable version.</p></d
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>

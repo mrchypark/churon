@@ -79,7 +79,7 @@
 <li>
 <p><strong>Update Rust Wrappers</strong>: If you modify <code>#[extendr]</code> signatures in Rust, regenerate R wrappers:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">rextendr</span><span class="fu">::</span><span class="fu"><a href="https://extendr.github.io/rextendr/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu">rextendr</span><span class="fu">::</span><span class="fu">document</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul></div>
 <div class="section level3">
@@ -102,7 +102,7 @@
 </ul></div>
 </div>
 <div class="section level2">
-<h2 id="id_-code-style--conventions">📐 Code Style &amp; Conventions<a class="anchor" aria-label="anchor" href="#id_-code-style--conventions"></a></h2>
+<h2 id="triangular_ruler-code-style--conventions">📐 Code Style &amp; Conventions<a class="anchor" aria-label="anchor" href="#triangular_ruler-code-style--conventions"></a></h2>
 <div class="section level3">
 <h3 id="r-style-r">R Style (<code>R/</code>)<a class="anchor" aria-label="anchor" href="#r-style-r"></a></h3>
 <ul><li>Follow the <strong>Tidyverse Style Guide</strong>.</li>
@@ -142,15 +142,18 @@
 </ul></div>
 </div>
 <div class="section level2">
-<h2 id="id_-cran-submission-guidelines">📦 CRAN Submission Guidelines<a class="anchor" aria-label="anchor" href="#id_-cran-submission-guidelines"></a></h2>
+<h2 id="package-cran-submission-guidelines">📦 CRAN Submission Guidelines<a class="anchor" aria-label="anchor" href="#package-cran-submission-guidelines"></a></h2>
 <p>To ensure this package meets CRAN policies (especially for Rust):</p>
-<ol style="list-style-type: decimal"><li><p><strong>System Requirements</strong>: Ensure <code>DESCRIPTION</code> contains: <code>dcf     SystemRequirements: Cargo (Rust's package manager), rustc</code></p></li>
+<ol style="list-style-type: decimal"><li>
+<p><strong>System Requirements</strong>: Ensure <code>DESCRIPTION</code> contains:</p>
+<pre class="dcf"><code>SystemRequirements: Cargo (Rust's package manager), rustc</code></pre>
+</li>
 <li>
 <p><strong>Offline Build (Vendoring)</strong>: CRAN build servers do not have internet access. Rust dependencies must be vendored inside the package source tarball.</p>
 <ul><li>
 <strong>Development</strong>: Do not commit <code>vendor/</code> to git.</li>
 <li>
-<strong>Release</strong>: Run <code><a href="https://extendr.github.io/rextendr/reference/vendor_pkgs.html" class="external-link">rextendr::vendor_pkgs()</a></code> before building the source tarball.</li>
+<strong>Release</strong>: Run <code>rextendr::vendor_pkgs()</code> before building the source tarball.</li>
 <li>
 <strong>Note</strong>: Ensure <code>.Rbuildignore</code> does <em>not</em> ignore <code>src/rust/vendor</code> when building for CRAN.</li>
 </ul></li>
@@ -166,10 +169,17 @@
 <li>
 <code>opt-level = 2</code> is often a good balance for CRAN.</li>
 </ul></li>
-<li><p><strong>Testing on CRAN</strong>: Tests requiring the downloaded ONNX Runtime or external models must be skipped if the resource is missing. <code>r     test_that("inference works", {       skip_if_not(onnx_runtime_is_installed())       # ... test code ...     })</code></p></li>
+<li>
+<p><strong>Testing on CRAN</strong>: Tests requiring the downloaded ONNX Runtime or external models must be skipped if the resource is missing.</p>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">test_that</span><span class="op">(</span><span class="st">"inference works"</span>, <span class="op">{</span></span>
+<span>  <span class="fu">skip_if_not</span><span class="op">(</span><span class="fu"><a href="reference/onnx_runtime_is_installed.html">onnx_runtime_is_installed</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="co"># ... test code ...</span></span>
+<span><span class="op">}</span><span class="op">)</span></span></code></pre></div>
+</li>
 </ol></div>
 <div class="section level2">
-<h2 id="id_️-critical-constraints">⚠️ Critical Constraints<a class="anchor" aria-label="anchor" href="#id_%EF%B8%8F-critical-constraints"></a></h2>
+<h2 id="warning-critical-constraints">⚠️ Critical Constraints<a class="anchor" aria-label="anchor" href="#warning-critical-constraints"></a></h2>
 <ol style="list-style-type: decimal"><li>
 <strong>ONNX Runtime Dependency</strong>:
 <ul><li>The package depends on dynamic libraries (<code>libonnxruntime</code>).</li>
@@ -184,12 +194,12 @@
 </ul></li>
 <li>
 <strong>Git Workflow</strong>:
-<ul><li>Commit <code>R/extendr-wrappers.R</code> only if you ran <code><a href="https://extendr.github.io/rextendr/reference/document.html" class="external-link">rextendr::document()</a></code>.</li>
+<ul><li>Commit <code>R/extendr-wrappers.R</code> only if you ran <code>rextendr::document()</code>.</li>
 <li>Do not commit <code>src/rust/target/</code>.</li>
 </ul></li>
 </ol></div>
 <div class="section level2">
-<h2 id="id_-project-structure">📂 Project Structure<a class="anchor" aria-label="anchor" href="#id_-project-structure"></a></h2>
+<h2 id="open_file_folder-project-structure">📂 Project Structure<a class="anchor" aria-label="anchor" href="#open_file_folder-project-structure"></a></h2>
 <ul><li>
 <code>R/</code> - R source code.
 <ul><li>
@@ -229,7 +239,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>
