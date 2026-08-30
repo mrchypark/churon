@@ -32,8 +32,8 @@ RUSTC=$(find_rust_command rustc) || {
   exit 1
 }
 
-cargo_version=$("$CARGO" --version | awk '{print $2}')
-rustc_version=$("$RUSTC" --version | awk '{print $2}')
+cargo_version=$("$CARGO" --version | tail -n 1 | awk '{print $2}')
+rustc_version=$("$RUSTC" --version | tail -n 1 | awk '{print $2}')
 version_at_least "$cargo_version" 1.88.0 || {
   echo "cargo >= 1.88.0 is required; found $cargo_version." >&2
   exit 1
