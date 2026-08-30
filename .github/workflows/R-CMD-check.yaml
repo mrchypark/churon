@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
+      - uses: r-lib/actions/setup-r@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           r-version: release
           use-public-rspm: true
@@ -64,7 +64,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
+        uses: r-lib/actions/setup-r@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           r-version: ${{ matrix.config.r }}
           use-public-rspm: true
@@ -93,7 +93,7 @@ jobs:
           echo "ORT_DYLIB_PATH=$ORT_PATH" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@929c772977a3a13c8733b363bf5a2f685c25dd91
+        uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           extra-packages: any::rcmdcheck
           needs: check
@@ -102,7 +102,7 @@ jobs:
         shell: bash
         run: tar -tf src/rust/vendor.tar.xz >/dev/null
 
-      - uses: r-lib/actions/check-r-package@929c772977a3a13c8733b363bf5a2f685c25dd91
+      - uses: r-lib/actions/check-r-package@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           error-on: '"warning"'
 
@@ -116,7 +116,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
+        uses: r-lib/actions/setup-r@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           r-version: ${{ matrix.r }}
           use-public-rspm: true
@@ -125,7 +125,7 @@ jobs:
         run: rustup toolchain install 1.88.0 --profile minimal
 
       - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@929c772977a3a13c8733b363bf5a2f685c25dd91
+        uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           extra-packages: any::rcmdcheck
           needs: check
@@ -136,6 +136,6 @@ jobs:
           RUSTUP_TOOLCHAIN: 1.88.0
           http_proxy: http://127.0.0.1:9
           https_proxy: http://127.0.0.1:9
-        uses: r-lib/actions/check-r-package@929c772977a3a13c8733b363bf5a2f685c25dd91
+        uses: r-lib/actions/check-r-package@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           error-on: '"warning"'

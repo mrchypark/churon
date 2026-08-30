@@ -25,13 +25,13 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
-      - uses: r-lib/actions/setup-pandoc@929c772977a3a13c8733b363bf5a2f685c25dd91
+      - uses: r-lib/actions/setup-pandoc@465b7d8e732ca3921382b1674c59bada9cbf3399
 
-      - uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
+      - uses: r-lib/actions/setup-r@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           use-public-rspm: true
 
-      - uses: r-lib/actions/setup-r-dependencies@929c772977a3a13c8733b363bf5a2f685c25dd91
+      - uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           extra-packages: any::pkgdown, local::.
           needs: website
