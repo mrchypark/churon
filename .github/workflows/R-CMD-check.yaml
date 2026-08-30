@@ -17,6 +17,7 @@ jobs:
     name: Rust ${{ matrix.toolchain.name }} (vendored, offline)
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         toolchain:
           - {name: '1.88', version: '1.88.0'}
@@ -82,7 +83,11 @@ jobs:
           esac
           cd inst/onnxruntime
           curl --fail --location --retry 3 --output "$ORT_ARCHIVE" "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ARCHIVE}"
-          printf '%s  %s\n' "$ORT_SHA256" "$ORT_ARCHIVE" | shasum -a 256 -c -
+          if command -v sha256sum >/dev/null; then
+            printf '%s  %s\n' "$ORT_SHA256" "$ORT_ARCHIVE" | sha256sum -c -
+          else
+            printf '%s  %s\n' "$ORT_SHA256" "$ORT_ARCHIVE" | shasum -a 256 -c -
+          fi
           if [[ "$ORT_ARCHIVE" == *.zip ]]; then unzip -q "$ORT_ARCHIVE"; else tar -xzf "$ORT_ARCHIVE"; fi
           extracted_dir=$(find . -maxdepth 1 -type d -name 'onnxruntime-*' -print -quit)
           test -n "$extracted_dir"
@@ -125,10 +130,16 @@ jobs:
         run: rustup toolchain install 1.88.0 --profile minimal
 
       - name: Install dependencies
+        if: matrix.r != '4.0'
         uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399
         with:
           extra-packages: any::rcmdcheck
           needs: check
+
+      - name: Install dependencies on R 4.0
+        if: matrix.r == '4.0'
+        shell: Rscript {0}
+        run: install.packages(c("digest", "testthat", "rcmdcheck"))
 
       - name: Check package without ONNX Runtime
         env:

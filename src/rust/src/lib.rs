@@ -69,11 +69,11 @@ pub enum ChurOnError {
 impl fmt::Display for ChurOnError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ChurOnError::ModelLoad(msg) => write!(f, "Model load error: {}", msg),
-            ChurOnError::Inference(msg) => write!(f, "Inference error: {}", msg),
-            ChurOnError::DataConversion(msg) => write!(f, "Data conversion error: {}", msg),
-            ChurOnError::Validation(msg) => write!(f, "Validation error: {}", msg),
-            ChurOnError::Provider(msg) => write!(f, "Provider error: {}", msg),
+            ChurOnError::ModelLoad(msg) => write!(f, "Model load error: {msg}"),
+            ChurOnError::Inference(msg) => write!(f, "Inference error: {msg}"),
+            ChurOnError::DataConversion(msg) => write!(f, "Data conversion error: {msg}"),
+            ChurOnError::Validation(msg) => write!(f, "Validation error: {msg}"),
+            ChurOnError::Provider(msg) => write!(f, "Provider error: {msg}"),
         }
     }
 }
@@ -84,19 +84,19 @@ impl From<ChurOnError> for extendr_api::Error {
     fn from(err: ChurOnError) -> Self {
         match err {
             ChurOnError::ModelLoad(msg) => {
-                extendr_api::Error::EvalError(format!("Model load failed: {}", msg).into())
+                extendr_api::Error::EvalError(format!("Model load failed: {msg}").into())
             }
             ChurOnError::Inference(msg) => {
-                extendr_api::Error::EvalError(format!("Inference failed: {}", msg).into())
+                extendr_api::Error::EvalError(format!("Inference failed: {msg}").into())
             }
             ChurOnError::DataConversion(msg) => {
-                extendr_api::Error::EvalError(format!("Data conversion failed: {}", msg).into())
+                extendr_api::Error::EvalError(format!("Data conversion failed: {msg}").into())
             }
             ChurOnError::Validation(msg) => {
-                extendr_api::Error::EvalError(format!("Input validation failed: {}", msg).into())
+                extendr_api::Error::EvalError(format!("Input validation failed: {msg}").into())
             }
             ChurOnError::Provider(msg) => {
-                extendr_api::Error::EvalError(format!("Execution provider error: {}", msg).into())
+                extendr_api::Error::EvalError(format!("Execution provider error: {msg}").into())
             }
         }
     }
@@ -216,7 +216,7 @@ impl RSession {
             // Use a block to limit the mutable borrow scope
             let outputs = {
                 self.session.run(ort_inputs).map_err(|e| {
-                    ChurOnError::Inference(format!("Inference execution failed: {}", e))
+                    ChurOnError::Inference(format!("Inference execution failed: {e}"))
                 })?
             };
 
@@ -261,16 +261,14 @@ impl RSession {
         for required_input in &self.input_names {
             if !provided_input_names.contains(required_input) {
                 return Err(ChurOnError::Validation(format!(
-                    "Required input '{}' not provided",
-                    required_input
+                    "Required input '{required_input}' not provided"
                 )));
             }
         }
         for provided_name in &provided_input_names {
             if !self.input_names.contains(provided_name) {
                 return Err(ChurOnError::Validation(format!(
-                    "Unexpected input '{}' provided",
-                    provided_name
+                    "Unexpected input '{provided_name}' provided"
                 )));
             }
         }
@@ -304,8 +302,7 @@ impl RSession {
                     string_tensors.insert(input_name_str.to_string(), vec![single_str.to_string()]);
                 } else {
                     return Err(ChurOnError::DataConversion(format!(
-                        "Failed to convert input '{}' to string data",
-                        input_name_str
+                        "Failed to convert input '{input_name_str}' to string data"
                     )));
                 }
             } else {
@@ -315,8 +312,7 @@ impl RSession {
                         self.input_shapes.get(idx).cloned().unwrap_or_default()
                     } else {
                         return Err(ChurOnError::Validation(format!(
-                            "Unknown input name: {}",
-                            input_name_str
+                            "Unknown input name: {input_name_str}"
                         )));
                     };
                 let shape_usize: Vec<usize> = expected_shape
@@ -354,8 +350,7 @@ impl RSession {
                     let data: Vec<f32> = tensor.iter().cloned().collect();
                     let ort_tensor = Tensor::from_array((shape, data)).map_err(|e| {
                         ChurOnError::DataConversion(format!(
-                            "Failed to create tensor for input '{}': {}",
-                            input_name, e
+                            "Failed to create tensor for input '{input_name}': {e}"
                         ))
                     })?;
                     let value: Value = ort_tensor.into();
@@ -371,8 +366,7 @@ impl RSession {
                 let ort_tensor = Tensor::from_string_array((shape, string_array.as_slice()))
                     .map_err(|e| {
                         ChurOnError::DataConversion(format!(
-                            "Failed to create string tensor for input '{}': {}",
-                            input_name, e
+                            "Failed to create string tensor for input '{input_name}': {e}"
                         ))
                     })?;
                 let value: Value = ort_tensor.into();
@@ -399,9 +393,9 @@ impl RSession {
             let mut out_names = Vec::new();
             for output_name in output_names {
                 let name = output_name.clone();
-                let output = outputs.get(&name).ok_or_else(|| {
-                    ChurOnError::Inference(format!("Output '{}' not found", name))
-                })?;
+                let output = outputs
+                    .get(&name)
+                    .ok_or_else(|| ChurOnError::Inference(format!("Output '{name}' not found")))?;
 
                 // Try numeric f32 output
                 let r_data = match output.try_extract_array::<f32>() {
@@ -410,8 +404,7 @@ impl RSession {
                         let data: Vec<f32> = array_view.iter().cloned().collect();
                         let array = ArrayD::from_shape_vec(IxDyn(&shape), data).map_err(|e| {
                             ChurOnError::DataConversion(format!(
-                                "Failed to create output array: {}",
-                                e
+                                "Failed to create output array: {e}"
                             ))
                         })?;
                         let converted = DataConverter::ndarray_f32_to_r(array)?;
@@ -424,8 +417,7 @@ impl RSession {
                             let array =
                                 ArrayD::from_shape_vec(IxDyn(&shape), data).map_err(|e| {
                                     ChurOnError::DataConversion(format!(
-                                        "Failed to create output array: {}",
-                                        e
+                                        "Failed to create output array: {e}"
                                     ))
                                 })?;
                             let converted = DataConverter::ndarray_f64_to_r(array)?;
@@ -433,8 +425,7 @@ impl RSession {
                         }
                         Err(_) => {
                             return Err(ChurOnError::DataConversion(format!(
-                                "Unsupported output data type for '{}'",
-                                name
+                                "Unsupported output data type for '{name}'"
                             ))
                             .into());
                         }
@@ -482,7 +473,7 @@ impl RSession {
                     .unwrap_or_default();
 
                 let lib_path = if !pkg_path.is_empty() {
-                    format!("{}/churon/onnxruntime/lib/onnxruntime.dll", pkg_path)
+                    format!("{pkg_path}/churon/onnxruntime/lib/onnxruntime.dll")
                 } else {
                     // Fallback: try to load from system path
                     "onnxruntime.dll".to_string()
@@ -527,21 +518,21 @@ impl RSession {
             let execution_providers = Self::get_execution_providers(providers)?;
             let session = Session::builder()
                 .map_err(|e| {
-                    ChurOnError::ModelLoad(format!("Failed to create session builder: {}", e))
+                    ChurOnError::ModelLoad(format!("Failed to create session builder: {e}"))
                 })?
                 .with_optimization_level(GraphOptimizationLevel::Level1)
                 .map_err(|e| {
-                    ChurOnError::ModelLoad(format!("Failed to set optimization level: {}", e))
+                    ChurOnError::ModelLoad(format!("Failed to set optimization level: {e}"))
                 })?
                 .with_intra_threads(1)
-                .map_err(|e| ChurOnError::ModelLoad(format!("Failed to set intra threads: {}", e)))?
+                .map_err(|e| ChurOnError::ModelLoad(format!("Failed to set intra threads: {e}")))?
                 .with_execution_providers(execution_providers)
                 .map_err(|e| {
-                    ChurOnError::Provider(format!("Failed to set execution providers: {}", e))
+                    ChurOnError::Provider(format!("Failed to set execution providers: {e}"))
                 })?
                 .commit_from_file(Path::new(path))
                 .map_err(|e| {
-                    ChurOnError::ModelLoad(format!("Failed to load model from {}: {}", path, e))
+                    ChurOnError::ModelLoad(format!("Failed to load model from {path}: {e}"))
                 })?;
             let inputs: Vec<_> = session.inputs().iter().collect();
             let outputs: Vec<_> = session.outputs().iter().collect();
@@ -610,8 +601,7 @@ impl RSession {
                         }
                         _ => {
                             return Err(ChurOnError::Provider(format!(
-                                "Execution provider is unknown or not enabled: {}",
-                                provider_name
+                                "Execution provider is unknown or not enabled: {provider_name}"
                             )))
                         }
                     }
@@ -671,7 +661,7 @@ impl DataConverter {
         }
 
         ArrayD::from_shape_vec(IxDyn(&effective_shape), data_f32)
-            .map_err(|e| ChurOnError::DataConversion(format!("Failed to create ndarray: {}", e)))
+            .map_err(|e| ChurOnError::DataConversion(format!("Failed to create ndarray: {e}")))
     }
 
     pub fn ndarray_f32_to_r(array: ArrayD<f32>) -> ChurOnResult<Doubles> {
