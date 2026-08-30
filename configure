@@ -1,0 +1,46 @@
+#!/bin/sh
+
+set -eu
+
+find_rust_command() {
+  command -v "$1" 2>/dev/null || {
+    if [ -x "${HOME:-}/.cargo/bin/$1" ]; then
+      printf '%s\n' "${HOME}/.cargo/bin/$1"
+    else
+      return 1
+    fi
+  }
+}
+
+version_at_least() {
+  awk -v current="$1" -v minimum="$2" 'BEGIN {
+    split(current, c, "."); split(minimum, m, ".")
+    for (i = 1; i <= 3; i++) {
+      if ((c[i] + 0) > (m[i] + 0)) exit 0
+      if ((c[i] + 0) < (m[i] + 0)) exit 1
+    }
+    exit 0
+  }'
+}
+
+CARGO=$(find_rust_command cargo) || {
+  echo "cargo was not found; install Cargo >= 1.88.0." >&2
+  exit 1
+}
+RUSTC=$(find_rust_command rustc) || {
+  echo "rustc was not found; install rustc >= 1.88.0." >&2
+  exit 1
+}
+
+cargo_version=$("$CARGO" --version | awk '{print $2}')
+rustc_version=$("$RUSTC" --version | awk '{print $2}')
+version_at_least "$cargo_version" 1.88.0 || {
+  echo "cargo >= 1.88.0 is required; found $cargo_version." >&2
+  exit 1
+}
+version_at_least "$rustc_version" 1.88.0 || {
+  echo "rustc >= 1.88.0 is required; found $rustc_version." >&2
+  exit 1
+}
+
+echo "Using cargo $cargo_version and rustc $rustc_version."

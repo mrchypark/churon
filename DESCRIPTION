@@ -1,13 +1,17 @@
 Package: churon
 Title: 'ONNX' Runtime Integration for R
 Version: 0.1.10
-Author: Chanyub Park [aut, cre] (<https://orcid.org/0000-0001-6474-2570>)
-Maintainer: Chanyub Park <mrchypark@gmail.com>
-Authors@R: person(given = "Chanyub",
-           family = "Park",
-           role = c("aut","cre"),
+Authors@R: c(
+    person(given = "Chanyub", family = "Park", role = c("aut", "cre"),
            email = "mrchypark@gmail.com",
-           comment = c(ORCID = "0000-0001-6474-2570"))
+           comment = c(ORCID = "0000-0001-6474-2570")),
+    person(given = "The authors of the dependency Rust crates", role = "ctb",
+           comment = "See inst/AUTHORS for details"),
+    person(given = "ONNX Project contributors", role = c("ctb", "cph"),
+           comment = "Bundled MNIST model, Apache License 2.0; see inst/COPYRIGHTS"),
+    person(given = "Microsoft Corporation", role = "cph",
+           comment = "ONNX Runtime, downloaded only on explicit user request")
+    )
 Description: Provides high-performance R bindings for 'ONNX' Runtime, enabling
     efficient machine learning model inference. Written in Rust for memory safety
     and speed, the package supports cross-platform model execution with multiple
@@ -21,7 +25,7 @@ BugReports: https://github.com/mrchypark/churon/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 Config/rextendr/version: 0.5.0
-SystemRequirements: Cargo (Rust's package manager), rustc (>= 1.88.0);
+SystemRequirements: Cargo (>= 1.88.0), rustc (>= 1.88.0);
     ONNX Runtime (>= 1.28.0, optional at runtime)
 Depends: R (>= 4.0.0)
 Imports:

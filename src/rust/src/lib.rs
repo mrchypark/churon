@@ -15,12 +15,13 @@ pub struct Value;
 #[cfg(target_arch = "wasm32")]
 pub struct Tensor;
 #[cfg(target_arch = "wasm32")]
-pub struct SessionOutputs;
+pub struct SessionOutputs<'a>(std::marker::PhantomData<&'a ()>);
 #[cfg(target_arch = "wasm32")]
 pub struct ExecutionProviderDispatch;
 
 use std::collections::HashMap;
 use std::fmt;
+#[cfg(not(target_arch = "wasm32"))]
 use std::path::Path;
 use std::sync::Once;
 

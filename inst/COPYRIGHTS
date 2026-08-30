@@ -1,0 +1,20 @@
+Bundled MNIST model
+===================
+
+File: model/mnist.onnx
+Source: ONNX Model Zoo, MNIST opset 8 model
+Source URL: https://github.com/onnx/models/blob/main/validated/vision/classification/mnist/model/mnist-8.onnx
+Copyright: ONNX Project contributors
+License: Apache License 2.0
+SHA-256: 2f06e72de813a8635c9bc0397ac447a601bdbfa7df4bebc278723b958831c9bf
+
+The ONNX Model Zoo license is available at:
+https://github.com/onnx/models/blob/main/LICENSE
+
+Optional ONNX Runtime
+=====================
+
+The install_onnx_runtime() function downloads ONNX Runtime only after an
+explicit user request. ONNX Runtime is Copyright Microsoft Corporation and
+contributors and is licensed under the MIT License. The downloaded archive
+contains its upstream license information.
