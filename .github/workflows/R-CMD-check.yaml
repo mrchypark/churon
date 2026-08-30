@@ -146,8 +146,13 @@ jobs:
         if: matrix.r == '4.0'
         shell: Rscript {0}
         run: |
-          install.packages(c("digest", "rcmdcheck", "remotes", "waldo"))
+          install.packages(c("digest", "rcmdcheck", "remotes"))
+          # Last releases supporting R 4.0; current releases require R >= 4.1.
+          remotes::install_version("glue", "1.8.0", upgrade = "never")
+          remotes::install_version("diffobj", "0.3.6", upgrade = "never")
+          remotes::install_version("fs", "1.6.6", upgrade = "never")
           remotes::install_version("testthat", "3.2.3", upgrade = "never")
+          stopifnot(requireNamespace("testthat", quietly = TRUE), requireNamespace("waldo", quietly = TRUE))
 
       - name: Check package without ONNX Runtime
         env:
