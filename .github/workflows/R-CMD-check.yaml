@@ -40,6 +40,8 @@ jobs:
           CARGO_NET_OFFLINE: "true"
         run: |
           set -euo pipefail
+          r_home=$(R RHOME)
+          export LD_LIBRARY_PATH="$r_home/lib:${LD_LIBRARY_PATH:-}"
           test -f src/rust/vendor.tar.xz
           tar -tf src/rust/vendor.tar.xz >/dev/null
           tar -xf src/rust/vendor.tar.xz -C src
@@ -136,10 +138,16 @@ jobs:
           extra-packages: any::rcmdcheck
           needs: check
 
+      - name: Install curl headers on R 4.0
+        if: matrix.r == '4.0'
+        run: sudo apt-get update && sudo apt-get install --yes libcurl4-openssl-dev
+
       - name: Install dependencies on R 4.0
         if: matrix.r == '4.0'
         shell: Rscript {0}
-        run: install.packages(c("digest", "testthat", "rcmdcheck"))
+        run: |
+          install.packages(c("digest", "rcmdcheck", "remotes"))
+          remotes::install_version("testthat", "3.2.3", upgrade = "never")
 
       - name: Check package without ONNX Runtime
         env:
