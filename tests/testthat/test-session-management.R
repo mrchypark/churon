@@ -1,7 +1,6 @@
 test_that("session creation with valid model", {
-  skip_on_os("windows")
   library(churon)
-  
+
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
     skip("ONNX Runtime not installed - run install_onnx_runtime()")
@@ -20,9 +19,8 @@ test_that("session creation with valid model", {
 })
 
 test_that("session creation with execution providers", {
-  skip_on_os("windows")
   library(churon)
-  
+
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
     skip("ONNX Runtime not installed - run install_onnx_runtime()")
@@ -44,9 +42,8 @@ test_that("session creation with execution providers", {
 })
 
 test_that("session information retrieval", {
-  skip_on_os("windows")
   library(churon)
-  
+
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
     skip("ONNX Runtime not installed - run install_onnx_runtime()")

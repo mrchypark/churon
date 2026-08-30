@@ -1,8 +1,8 @@
-use extendr_api::prelude::*;
 use crate::ndarray::{ArrayD, IxDyn};
+use extendr_api::prelude::*;
 
 #[cfg(not(target_arch = "wasm32"))]
-use ort::execution_providers::ExecutionProviderDispatch;
+use ort::ep::{self, ExecutionProviderDispatch};
 #[cfg(not(target_arch = "wasm32"))]
 use ort::session::{builder::GraphOptimizationLevel, Session, SessionOutputs};
 #[cfg(not(target_arch = "wasm32"))]
@@ -103,6 +103,7 @@ impl From<ChurOnError> for extendr_api::Error {
 }
 
 pub type ChurOnResult<T> = std::result::Result<T, ChurOnError>;
+type InputData = (HashMap<String, ArrayD<f32>>, HashMap<String, Vec<String>>);
 
 #[extendr]
 pub struct RSession {
@@ -131,27 +132,27 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        if let Some(ref cached_info) = self.input_info_cache {
-            return Ok(List::from_values(cached_info.clone()));
-        }
+            if let Some(ref cached_info) = self.input_info_cache {
+                return Ok(List::from_values(cached_info.clone()));
+            }
 
-        let inputs: Vec<_> = self.session.inputs.iter().collect();
-        let tensor_infos: Vec<TensorInfo> = inputs
-            .iter()
-            .enumerate()
-            .map(|(i, input)| {
-                let shape_i64 = self.input_shapes.get(i).cloned().unwrap_or_default();
-                let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
-                TensorInfo::new(
-                    input.name.to_string(),
-                    shape_i32,
-                    format!("{:?}", input.input_type),
-                )
-            })
-            .collect();
+            let inputs: Vec<_> = self.session.inputs().iter().collect();
+            let tensor_infos: Vec<TensorInfo> = inputs
+                .iter()
+                .enumerate()
+                .map(|(i, input)| {
+                    let shape_i64 = self.input_shapes.get(i).cloned().unwrap_or_default();
+                    let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
+                    TensorInfo::new(
+                        input.name().to_string(),
+                        shape_i32,
+                        format!("{:?}", input.dtype()),
+                    )
+                })
+                .collect();
 
-        self.input_info_cache = Some(tensor_infos.clone());
-        Ok(List::from_values(tensor_infos))
+            self.input_info_cache = Some(tensor_infos.clone());
+            Ok(List::from_values(tensor_infos))
         }
     }
 
@@ -163,27 +164,27 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        if let Some(ref cached_info) = self.output_info_cache {
-            return Ok(List::from_values(cached_info.clone()));
-        }
+            if let Some(ref cached_info) = self.output_info_cache {
+                return Ok(List::from_values(cached_info.clone()));
+            }
 
-        let outputs: Vec<_> = self.session.outputs.iter().collect();
-        let tensor_infos: Vec<TensorInfo> = outputs
-            .iter()
-            .enumerate()
-            .map(|(i, output)| {
-                let shape_i64 = self.output_shapes.get(i).cloned().unwrap_or_default();
-                let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
-                TensorInfo::new(
-                    output.name.to_string(),
-                    shape_i32,
-                    format!("{:?}", output.output_type),
-                )
-            })
-            .collect();
+            let outputs: Vec<_> = self.session.outputs().iter().collect();
+            let tensor_infos: Vec<TensorInfo> = outputs
+                .iter()
+                .enumerate()
+                .map(|(i, output)| {
+                    let shape_i64 = self.output_shapes.get(i).cloned().unwrap_or_default();
+                    let shape_i32: Vec<i32> = shape_i64.iter().map(|&x| x as i32).collect();
+                    TensorInfo::new(
+                        output.name().to_string(),
+                        shape_i32,
+                        format!("{:?}", output.dtype()),
+                    )
+                })
+                .collect();
 
-        self.output_info_cache = Some(tensor_infos.clone());
-        Ok(List::from_values(tensor_infos))
+            self.output_info_cache = Some(tensor_infos.clone());
+            Ok(List::from_values(tensor_infos))
         }
     }
 
@@ -204,22 +205,22 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        self.validate_session()?;
-        self.validate_inputs(&inputs)?;
-        let input_data = self.prepare_input_tensors(inputs)?;
-        let ort_inputs = self.convert_to_ort_values(input_data)?;
+            self.validate_session()?;
+            self.validate_inputs(&inputs)?;
+            let input_data = self.prepare_input_tensors(inputs)?;
+            let ort_inputs = self.convert_to_ort_values(input_data)?;
 
-        // Clone output names before the mutable borrow scope
-        let output_names = self.output_names.clone();
+            // Clone output names before the mutable borrow scope
+            let output_names = self.output_names.clone();
 
-        // Use a block to limit the mutable borrow scope
-        let outputs = {
-            self.session
-                .run(ort_inputs)
-                .map_err(|e| ChurOnError::Inference(format!("Inference execution failed: {}", e)))?
-        };
+            // Use a block to limit the mutable borrow scope
+            let outputs = {
+                self.session.run(ort_inputs).map_err(|e| {
+                    ChurOnError::Inference(format!("Inference execution failed: {}", e))
+                })?
+            };
 
-        Self::extract_outputs(outputs, &output_names)
+            Self::extract_outputs(outputs, &output_names)
         }
     }
 }
@@ -245,7 +246,7 @@ impl RSession {
     }
 
     fn validate_inputs(&self, inputs: &List) -> ChurOnResult<()> {
-        if inputs.len() == 0 {
+        if inputs.is_empty() {
             return Err(ChurOnError::Validation(
                 "No input data provided".to_string(),
             ));
@@ -276,10 +277,7 @@ impl RSession {
         Ok(())
     }
 
-    fn prepare_input_tensors(
-        &self,
-        inputs: List,
-    ) -> ChurOnResult<(HashMap<String, ArrayD<f32>>, HashMap<String, Vec<String>>)> {
+    fn prepare_input_tensors(&self, inputs: List) -> ChurOnResult<InputData> {
         let mut numeric_tensors = HashMap::new();
         let mut string_tensors = HashMap::new();
         let input_names = inputs.names().unwrap_or_default();
@@ -346,47 +344,47 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        let (numeric_tensors, string_tensors) = input_data;
-        let mut values: HashMap<String, Value> = HashMap::new();
+            let (numeric_tensors, string_tensors) = input_data;
+            let mut values: HashMap<String, Value> = HashMap::new();
 
-        // Handle numeric tensors
-        for input_name in &self.input_names {
-            if let Some(tensor) = numeric_tensors.get(input_name) {
-                let shape: Vec<usize> = tensor.shape().iter().map(|&d| d as usize).collect();
-                let data: Vec<f32> = tensor.iter().cloned().collect();
-                let ort_tensor = Tensor::from_array((shape, data)).map_err(|e| {
-                    ChurOnError::DataConversion(format!(
-                        "Failed to create tensor for input '{}': {}",
-                        input_name, e
-                    ))
-                })?;
+            // Handle numeric tensors
+            for input_name in &self.input_names {
+                if let Some(tensor) = numeric_tensors.get(input_name) {
+                    let shape: Vec<usize> = tensor.shape().to_vec();
+                    let data: Vec<f32> = tensor.iter().cloned().collect();
+                    let ort_tensor = Tensor::from_array((shape, data)).map_err(|e| {
+                        ChurOnError::DataConversion(format!(
+                            "Failed to create tensor for input '{}': {}",
+                            input_name, e
+                        ))
+                    })?;
+                    let value: Value = ort_tensor.into();
+                    values.insert(input_name.clone(), value);
+                }
+            }
+
+            // Handle string tensors using Tensor::from_string_array
+            for (input_name, string_data) in &string_tensors {
+                let shape = [string_data.len()];
+                // Create owned string array to avoid lifetime issues
+                let string_array: Vec<String> = string_data.iter().map(|s| s.to_string()).collect();
+                let ort_tensor = Tensor::from_string_array((shape, string_array.as_slice()))
+                    .map_err(|e| {
+                        ChurOnError::DataConversion(format!(
+                            "Failed to create string tensor for input '{}': {}",
+                            input_name, e
+                        ))
+                    })?;
                 let value: Value = ort_tensor.into();
                 values.insert(input_name.clone(), value);
             }
-        }
 
-        // Handle string tensors using Tensor::from_string_array
-        for (input_name, string_data) in &string_tensors {
-            let shape = [string_data.len()];
-            // Create owned string array to avoid lifetime issues
-            let string_array: Vec<String> = string_data.iter().map(|s| s.to_string()).collect();
-            let ort_tensor =
-                Tensor::from_string_array((shape, string_array.as_slice())).map_err(|e| {
-                    ChurOnError::DataConversion(format!(
-                        "Failed to create string tensor for input '{}': {}",
-                        input_name, e
-                    ))
-                })?;
-            let value: Value = ort_tensor.into();
-            values.insert(input_name.clone(), value);
-        }
-
-        Ok(values)
+            Ok(values)
         }
     }
 
     fn extract_outputs(
-        outputs: SessionOutputs,
+        outputs: SessionOutputs<'_>,
         output_names: &[String],
     ) -> extendr_api::Result<List> {
         #[cfg(target_arch = "wasm32")]
@@ -397,53 +395,57 @@ impl RSession {
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        let mut r_outputs = Vec::new();
-        let mut out_names = Vec::new();
-        for output_name in output_names {
-            let name = output_name.clone();
-            let output = outputs
-                .get(&name)
-                .ok_or_else(|| ChurOnError::Inference(format!("Output '{}' not found", name)))?;
+            let mut r_outputs = Vec::new();
+            let mut out_names = Vec::new();
+            for output_name in output_names {
+                let name = output_name.clone();
+                let output = outputs.get(&name).ok_or_else(|| {
+                    ChurOnError::Inference(format!("Output '{}' not found", name))
+                })?;
 
-            // Try numeric f32 output
-            let r_data = match output.try_extract_array::<f32>() {
-                Ok(array_view) => {
-                    let shape: Vec<usize> = array_view.shape().to_vec();
-                    let data: Vec<f32> = array_view.iter().cloned().collect();
-                    let array = ArrayD::from_shape_vec(IxDyn(&shape), data).map_err(|e| {
-                        ChurOnError::DataConversion(format!("Failed to create output array: {}", e))
-                    })?;
-                    let converted = DataConverter::ndarray_f32_to_r(array)?;
-                    converted.into_robj()
-                }
-                Err(_) => match output.try_extract_array::<f64>() {
+                // Try numeric f32 output
+                let r_data = match output.try_extract_array::<f32>() {
                     Ok(array_view) => {
                         let shape: Vec<usize> = array_view.shape().to_vec();
-                        let data: Vec<f64> = array_view.iter().cloned().collect();
+                        let data: Vec<f32> = array_view.iter().cloned().collect();
                         let array = ArrayD::from_shape_vec(IxDyn(&shape), data).map_err(|e| {
                             ChurOnError::DataConversion(format!(
                                 "Failed to create output array: {}",
                                 e
                             ))
                         })?;
-                        let converted = DataConverter::ndarray_f64_to_r(array)?;
+                        let converted = DataConverter::ndarray_f32_to_r(array)?;
                         converted.into_robj()
                     }
-                    Err(_) => {
-                        return Err(ChurOnError::DataConversion(format!(
-                            "Unsupported output data type for '{}'",
-                            name
-                        ))
-                        .into());
-                    }
-                },
-            };
-            r_outputs.push(r_data);
-            out_names.push(name);
-        }
-        let mut result = List::from_values(r_outputs);
-        result.set_names(out_names)?;
-        Ok(result)
+                    Err(_) => match output.try_extract_array::<f64>() {
+                        Ok(array_view) => {
+                            let shape: Vec<usize> = array_view.shape().to_vec();
+                            let data: Vec<f64> = array_view.iter().cloned().collect();
+                            let array =
+                                ArrayD::from_shape_vec(IxDyn(&shape), data).map_err(|e| {
+                                    ChurOnError::DataConversion(format!(
+                                        "Failed to create output array: {}",
+                                        e
+                                    ))
+                                })?;
+                            let converted = DataConverter::ndarray_f64_to_r(array)?;
+                            converted.into_robj()
+                        }
+                        Err(_) => {
+                            return Err(ChurOnError::DataConversion(format!(
+                                "Unsupported output data type for '{}'",
+                                name
+                            ))
+                            .into());
+                        }
+                    },
+                };
+                r_outputs.push(r_data);
+                out_names.push(name);
+            }
+            let mut result = List::from_values(r_outputs);
+            result.set_names(out_names)?;
+            Ok(result)
         }
     }
 }
@@ -455,57 +457,60 @@ impl RSession {
     ) -> extendr_api::Result<Self> {
         #[cfg(target_arch = "wasm32")]
         {
-            Err(extendr_api::Error::EvalError("ONNX Runtime is not supported on WASM".into()))
+            Err(extendr_api::Error::EvalError(
+                "ONNX Runtime is not supported on WASM".into(),
+            ))
         }
 
         #[cfg(not(target_arch = "wasm32"))]
         {
-        // Check if ONNX Runtime library is available before attempting to initialize
-        // This prevents panics in the ort crate when the library is missing
-        let dylib_path = std::env::var("ORT_DYLIB_PATH")
-            .ok()
-            .filter(|p| !p.is_empty());
+            // Check if ONNX Runtime library is available before attempting to initialize
+            // This prevents panics in the ort crate when the library is missing
+            let dylib_path = std::env::var("ORT_DYLIB_PATH")
+                .ok()
+                .filter(|p| !p.is_empty());
 
-        // If ORT_DYLIB_PATH is not set, try to find the library in common locations
-        let dylib_path = if let Some(path) = dylib_path {
-            path
-        } else {
-            // Try to find the library in the package installation directory
-            // This is the default location used by install_onnx_runtime()
-            let pkg_path = std::env::var("R_PACKAGE_DIR").ok()
-                .or_else(|| std::env::var("R_LIBS_USER").ok())
-                .unwrap_or_default();
-
-            let lib_path = if !pkg_path.is_empty() {
-                format!("{}/churon/onnxruntime/lib/onnxruntime.dll", pkg_path)
+            // If ORT_DYLIB_PATH is not set, try to find the library in common locations
+            let dylib_path = if let Some(path) = dylib_path {
+                path
             } else {
-                // Fallback: try to load from system path
-                "onnxruntime.dll".to_string()
-            };
+                // Try to find the library in the package installation directory
+                // This is the default location used by install_onnx_runtime()
+                let pkg_path = std::env::var("R_PACKAGE_DIR")
+                    .ok()
+                    .or_else(|| std::env::var("R_LIBS_USER").ok())
+                    .unwrap_or_default();
 
-            if std::path::Path::new(&lib_path).exists() {
-                lib_path
-            } else {
-                // Library not found - return error instead of panicking
-                return Err(extendr_api::Error::EvalError(
+                let lib_path = if !pkg_path.is_empty() {
+                    format!("{}/churon/onnxruntime/lib/onnxruntime.dll", pkg_path)
+                } else {
+                    // Fallback: try to load from system path
+                    "onnxruntime.dll".to_string()
+                };
+
+                if std::path::Path::new(&lib_path).exists() {
+                    lib_path
+                } else {
+                    // Library not found - return error instead of panicking
+                    return Err(extendr_api::Error::EvalError(
                     "ONNX Runtime library not found. Please run install_onnx_runtime() to download it.".into(),
                 ));
-            }
-        };
+                }
+            };
 
-        // Use Once to ensure ort initialization happens only once
-        // This prevents mutex poisoning when called concurrently
-        ORT_INIT.call_once(|| {
+            // Use Once to ensure ort initialization happens only once
+            // This prevents mutex poisoning when called concurrently
+            ORT_INIT.call_once(|| {
             // Initialize ONNX Runtime with panic recovery
             // ort::init_from() may panic if library is invalid, so we catch it
             let init_result = std::panic::catch_unwind(|| {
-                ort::init_from(&dylib_path).commit()
+                ort::init_from(&dylib_path).map(|builder| builder.commit())
             });
 
             // Log any initialization errors but don't panic
             // Let R handle the "not installed" case gracefully
             match init_result {
-                Ok(Ok(_env)) => {
+                Ok(Ok(_committed)) => {
                     // Environment initialized successfully
                 }
                 Ok(Err(e)) => {
@@ -517,56 +522,56 @@ impl RSession {
             }
         });
 
-        // Check if ONNX Runtime was initialized successfully
-        // If initialization failed, we can't proceed
-        let execution_providers = Self::get_execution_providers(providers)?;
-        let session = Session::builder()
-            .map_err(|e| {
-                ChurOnError::ModelLoad(format!("Failed to create session builder: {}", e))
-            })?
-            .with_optimization_level(GraphOptimizationLevel::Level1)
-            .map_err(|e| {
-                ChurOnError::ModelLoad(format!("Failed to set optimization level: {}", e))
-            })?
-            .with_intra_threads(1)
-            .map_err(|e| ChurOnError::ModelLoad(format!("Failed to set intra threads: {}", e)))?
-            .with_execution_providers(execution_providers)
-            .map_err(|e| {
-                ChurOnError::Provider(format!("Failed to set execution providers: {}", e))
-            })?
-            .commit_from_file(Path::new(path))
-            .map_err(|e| {
-                ChurOnError::ModelLoad(format!("Failed to load model from {}: {}", path, e))
-            })?;
-        let inputs: Vec<_> = session.inputs.iter().collect();
-        let outputs: Vec<_> = session.outputs.iter().collect();
-        let input_names: Vec<String> = inputs
-            .iter()
-            .map(|input| input.name.to_string())
-            .collect();
-        let output_names: Vec<String> = outputs
-            .iter()
-            .map(|output| output.name.to_string())
-            .collect();
-        let input_shapes: Vec<Vec<i64>> = inputs
-            .iter()
-            .map(|_| vec![-1]) // Placeholder - dynamic dimension
-            .collect();
-        let output_shapes: Vec<Vec<i64>> = outputs
-            .iter()
-            .map(|_| vec![-1]) // Placeholder - dynamic dimension
-            .collect();
-        Ok(RSession {
-            session,
-            input_names,
-            output_names,
-            input_shapes,
-            output_shapes,
-            providers: vec!["CPU".to_string()],
-            model_path: path.to_string(),
-            input_info_cache: None,
-            output_info_cache: None,
-        })
+            // Check if ONNX Runtime was initialized successfully
+            // If initialization failed, we can't proceed
+            let execution_providers = Self::get_execution_providers(providers)?;
+            let session = Session::builder()
+                .map_err(|e| {
+                    ChurOnError::ModelLoad(format!("Failed to create session builder: {}", e))
+                })?
+                .with_optimization_level(GraphOptimizationLevel::Level1)
+                .map_err(|e| {
+                    ChurOnError::ModelLoad(format!("Failed to set optimization level: {}", e))
+                })?
+                .with_intra_threads(1)
+                .map_err(|e| ChurOnError::ModelLoad(format!("Failed to set intra threads: {}", e)))?
+                .with_execution_providers(execution_providers)
+                .map_err(|e| {
+                    ChurOnError::Provider(format!("Failed to set execution providers: {}", e))
+                })?
+                .commit_from_file(Path::new(path))
+                .map_err(|e| {
+                    ChurOnError::ModelLoad(format!("Failed to load model from {}: {}", path, e))
+                })?;
+            let inputs: Vec<_> = session.inputs().iter().collect();
+            let outputs: Vec<_> = session.outputs().iter().collect();
+            let input_names: Vec<String> = inputs
+                .iter()
+                .map(|input| input.name().to_string())
+                .collect();
+            let output_names: Vec<String> = outputs
+                .iter()
+                .map(|output| output.name().to_string())
+                .collect();
+            let input_shapes: Vec<Vec<i64>> = inputs
+                .iter()
+                .map(|_| vec![-1]) // Placeholder - dynamic dimension
+                .collect();
+            let output_shapes: Vec<Vec<i64>> = outputs
+                .iter()
+                .map(|_| vec![-1]) // Placeholder - dynamic dimension
+                .collect();
+            Ok(RSession {
+                session,
+                input_names,
+                output_names,
+                input_shapes,
+                output_shapes,
+                providers: vec!["CPU".to_string()],
+                model_path: path.to_string(),
+                input_info_cache: None,
+                output_info_cache: None,
+            })
         }
     }
 
@@ -585,61 +590,38 @@ impl RSession {
                 let mut has_cpu = false;
                 for provider_name in provider_names {
                     match provider_name.to_lowercase().as_str() {
-                        "cuda" => execution_providers.push(
-                            ort::execution_providers::CUDAExecutionProvider::default().build(),
-                        ),
-                        "tensorrt" => execution_providers.push(
-                            ort::execution_providers::TensorRTExecutionProvider::default().build(),
-                        ),
-                        "directml" => execution_providers.push(
-                            ort::execution_providers::DirectMLExecutionProvider::default().build(),
-                        ),
-                        "onednn" => execution_providers.push(
-                            ort::execution_providers::OneDNNExecutionProvider::default().build(),
-                        ),
-                        "coreml" => execution_providers.push(
-                            ort::execution_providers::CoreMLExecutionProvider::default().build(),
-                        ),
+                        #[cfg(feature = "ort-cuda")]
+                        "cuda" => execution_providers.push(ep::CUDA::default().build()),
+                        #[cfg(feature = "ort-tensorrt")]
+                        "tensorrt" => execution_providers.push(ep::TensorRT::default().build()),
+                        #[cfg(feature = "ort-directml")]
+                        "directml" => execution_providers.push(ep::DirectML::default().build()),
+                        #[cfg(feature = "ort-onednn")]
+                        "onednn" => execution_providers.push(ep::OneDNN::default().build()),
+                        #[cfg(feature = "ort-coreml")]
+                        "coreml" => execution_providers.push(ep::CoreML::default().build()),
+                        #[cfg(feature = "ort-rocm")]
+                        "rocm" => execution_providers.push(ep::ROCm::default().build()),
+                        #[cfg(feature = "ort-openvino")]
+                        "openvino" => execution_providers.push(ep::OpenVINO::default().build()),
                         "cpu" => {
-                            execution_providers.push(
-                                ort::execution_providers::CPUExecutionProvider::default().build(),
-                            );
+                            execution_providers.push(ep::CPU::default().build());
                             has_cpu = true;
                         }
                         _ => {
                             return Err(ChurOnError::Provider(format!(
-                                "Unknown execution provider: {}",
+                                "Execution provider is unknown or not enabled: {}",
                                 provider_name
                             )))
                         }
                     }
                 }
                 if !has_cpu {
-                    execution_providers
-                        .push(ort::execution_providers::CPUExecutionProvider::default().build());
+                    execution_providers.push(ep::CPU::default().build());
                 }
                 Ok(execution_providers)
             }
-            None => {
-                let mut execution_providers = Vec::new();
-                #[cfg(target_os = "macos")]
-                {
-                    execution_providers
-                        .push(ort::execution_providers::CoreMLExecutionProvider::default().build());
-                }
-                #[cfg(target_os = "windows")]
-                {
-                    execution_providers.push(
-                        ort::execution_providers::DirectMLExecutionProvider::default().build(),
-                    );
-                }
-                execution_providers.extend_from_slice(&[
-                    ort::execution_providers::CUDAExecutionProvider::default().build(),
-                    ort::execution_providers::OneDNNExecutionProvider::default().build(),
-                    ort::execution_providers::CPUExecutionProvider::default().build(),
-                ]);
-                Ok(execution_providers)
-            }
+            None => Ok(vec![ep::CPU::default().build()]),
         }
     }
 }
@@ -654,7 +636,7 @@ impl DataConverter {
     ) -> ChurOnResult<ArrayD<f32>> {
         // Get dimensions from R object
         let actual_shape: Vec<usize> = if let Some(dims) = robj.dim() {
-            dims.iter().map(|d| d.inner() as usize).collect()
+            dims.iter().map(|d| d.0 as usize).collect()
         } else {
             vec![robj.len()]
         };

@@ -26,7 +26,7 @@ NULL
 #' \dontrun{
 #' # Create session with default providers
 #' session <- onnx_session("path/to/model.onnx")
-#' 
+#'
 #' # Create session with specific providers
 #' session <- onnx_session("path/to/model.onnx", providers = c("cuda", "cpu"))
 #' }
@@ -35,64 +35,91 @@ onnx_session <- function(model_path, providers = NULL) {
   if (missing(model_path) || is.null(model_path)) {
     stop("model_path is required and cannot be NULL")
   }
-  
+
   if (!is.character(model_path) || length(model_path) != 1) {
     stop("model_path must be a single character string")
   }
-  
+
   if (nchar(model_path) == 0) {
     stop("model_path cannot be empty")
   }
-  
+
   if (!file.exists(model_path)) {
-    stop("Model file not found: ", model_path, 
-         "\nPlease check the file path and ensure the file exists.")
+    stop(
+      "Model file not found: ",
+      model_path,
+      "\nPlease check the file path and ensure the file exists."
+    )
   }
-  
+
   # Check file extension
   if (!grepl("\\.onnx$", model_path, ignore.case = TRUE)) {
-    warning("Model file does not have .onnx extension. This may not be a valid ONNX model.")
+    warning(
+      "Model file does not have .onnx extension. This may not be a valid ONNX model."
+    )
   }
-  
+
   # Validate providers if provided
   if (!is.null(providers)) {
     if (!is.character(providers)) {
       stop("providers must be a character vector")
     }
-    
-    valid_providers <- c("cuda", "tensorrt", "directml", "onednn", "coreml", "cpu")
+
+    valid_providers <- c(
+      "cuda",
+      "tensorrt",
+      "directml",
+      "onednn",
+      "coreml",
+      "cpu"
+    )
     invalid_providers <- providers[!tolower(providers) %in% valid_providers]
-    
+
     if (length(invalid_providers) > 0) {
-      stop("Invalid execution providers: ", paste(invalid_providers, collapse = ", "), 
-           "\nValid providers are: ", paste(valid_providers, collapse = ", "))
+      stop(
+        "Invalid execution providers: ",
+        paste(invalid_providers, collapse = ", "),
+        "\nValid providers are: ",
+        paste(valid_providers, collapse = ", ")
+      )
     }
   }
-  
-  tryCatch({
-    session <- RSession$from_path(model_path)
-    
-    # Validate session was created successfully
-    if (is.null(session)) {
-      stop("Session creation returned NULL")
+
+  tryCatch(
+    {
+      session <- RSession$from_path(model_path)
+
+      # Validate session was created successfully
+      if (is.null(session)) {
+        stop("Session creation returned NULL")
+      }
+
+      return(session)
+    },
+    error = function(e) {
+      # Provide more helpful error messages based on error type
+      error_msg <- e$message
+
+      if (grepl("libonnxruntime", error_msg)) {
+        stop(
+          "ONNX Runtime library not found. Please install ONNX Runtime or check your installation.\n",
+          "Original error: ",
+          error_msg
+        )
+      } else if (grepl("Model load failed", error_msg)) {
+        stop(
+          "Failed to load ONNX model. The file may be corrupted or not a valid ONNX model.\n",
+          "Model path: ",
+          model_path,
+          "\n",
+          "Original error: ",
+          error_msg
+        )
+      } else {
+        stop("Failed to create ONNX session: ", error_msg)
+      }
     }
-    
-    return(session)
-  }, error = function(e) {
-    # Provide more helpful error messages based on error type
-    error_msg <- e$message
-    
-    if (grepl("libonnxruntime", error_msg)) {
-      stop("ONNX Runtime library not found. Please install ONNX Runtime or check your installation.\n",
-           "Original error: ", error_msg)
-    } else if (grepl("Model load failed", error_msg)) {
-      stop("Failed to load ONNX model. The file may be corrupted or not a valid ONNX model.\n",
-           "Model path: ", model_path, "\n",
-           "Original error: ", error_msg)
-    } else {
-      stop("Failed to create ONNX session: ", error_msg)
-    }
-  })
+  )
 }
 
 #' Run ONNX Inference
@@ -111,86 +138,119 @@ onnx_session <- function(model_path, providers = NULL) {
 #' }
 onnx_run <- function(session, inputs) {
   .validate_session(session)
-  
+
   # Validate inputs parameter
   if (missing(inputs) || is.null(inputs)) {
     stop("inputs is required and cannot be NULL")
   }
-  
+
   if (!is.list(inputs)) {
     stop("inputs must be a named list of tensors")
   }
-  
+
   if (length(inputs) == 0) {
     stop("inputs cannot be empty. At least one input tensor is required.")
   }
-  
+
   # Check if inputs are named
   input_names <- names(inputs)
-  if (is.null(input_names) || any(input_names == "") || any(is.na(input_names))) {
-    stop("All inputs must be named. Please provide a named list where names match model input names.")
+  if (
+    is.null(input_names) || any(input_names == "") || any(is.na(input_names))
+  ) {
+    stop(
+      "All inputs must be named. Please provide a named list where names match model input names."
+    )
   }
-  
+
   # Check for duplicate names
   if (any(duplicated(input_names))) {
     duplicates <- input_names[duplicated(input_names)]
     stop("Duplicate input names found: ", paste(duplicates, collapse = ", "))
   }
-  
+
   # Validate input data types
   for (i in seq_along(inputs)) {
     input_name <- input_names[i]
     input_data <- inputs[[i]]
-    
+
     if (is.null(input_data)) {
       stop("Input '", input_name, "' cannot be NULL")
     }
-    
+
     if (!is.numeric(input_data)) {
-      stop("Input '", input_name, "' must be numeric (matrix, vector, or array)")
+      stop(
+        "Input '",
+        input_name,
+        "' must be numeric (matrix, vector, or array)"
+      )
     }
-    
+
     if (any(is.na(input_data))) {
-      warning("Input '", input_name, "' contains NA values. This may cause inference to fail.")
+      warning(
+        "Input '",
+        input_name,
+        "' contains NA values. This may cause inference to fail."
+      )
     }
-    
+
     if (any(is.infinite(input_data))) {
-      warning("Input '", input_name, "' contains infinite values. This may cause inference to fail.")
+      warning(
+        "Input '",
+        input_name,
+        "' contains infinite values. This may cause inference to fail."
+      )
     }
   }
-  
-  tryCatch({
-    result <- session$run(inputs)
-    
-    # Validate result
-    if (is.null(result)) {
-      stop("Inference returned NULL result")
+
+  tryCatch(
+    {
+      result <- session$run(inputs)
+
+      # Validate result
+      if (is.null(result)) {
+        stop("Inference returned NULL result")
+      }
+
+      return(result)
+    },
+    error = function(e) {
+      error_msg <- e$message
+
+      # Provide more specific error messages based on error type
+      if (grepl("Required input.*not provided", error_msg)) {
+        stop(
+          "Missing required input tensor. ",
+          error_msg,
+          "\nPlease check the model's input requirements using onnx_input_info(session)"
+        )
+      } else if (grepl("Unexpected input.*provided", error_msg)) {
+        stop(
+          "Unexpected input tensor provided. ",
+          error_msg,
+          "\nPlease check the model's input requirements using onnx_input_info(session)"
+        )
+      } else if (grepl("Shape mismatch", error_msg)) {
+        stop(
+          "Input tensor shape mismatch. ",
+          error_msg,
+          "\nPlease check the expected input shapes using onnx_input_info(session)"
+        )
+      } else if (grepl("Data conversion failed", error_msg)) {
+        stop(
+          "Failed to convert input data. ",
+          error_msg,
+          "\nPlease ensure all inputs are numeric and have the correct dimensions."
+        )
+      } else if (grepl("Tensor conversion not yet implemented", error_msg)) {
+        stop(
+          "ONNX tensor conversion is not yet fully implemented. ",
+          "This is a known limitation of the current version."
+        )
+      } else {
+        stop("Inference failed: ", error_msg)
+      }
     }
-    
-    return(result)
-  }, error = function(e) {
-    error_msg <- e$message
-    
-    # Provide more specific error messages based on error type
-    if (grepl("Required input.*not provided", error_msg)) {
-      stop("Missing required input tensor. ", error_msg, 
-           "\nPlease check the model's input requirements using onnx_input_info(session)")
-    } else if (grepl("Unexpected input.*provided", error_msg)) {
-      stop("Unexpected input tensor provided. ", error_msg,
-           "\nPlease check the model's input requirements using onnx_input_info(session)")
-    } else if (grepl("Shape mismatch", error_msg)) {
-      stop("Input tensor shape mismatch. ", error_msg,
-           "\nPlease check the expected input shapes using onnx_input_info(session)")
-    } else if (grepl("Data conversion failed", error_msg)) {
-      stop("Failed to convert input data. ", error_msg,
-           "\nPlease ensure all inputs are numeric and have the correct dimensions.")
-    } else if (grepl("Tensor conversion not yet implemented", error_msg)) {
-      stop("ONNX tensor conversion is not yet fully implemented. ",
-           "This is a known limitation of the current version.")
-    } else {
-      stop("Inference failed: ", error_msg)
-    }
-  })
+  )
 }
 
 #' Get Input Information
@@ -208,19 +268,22 @@ onnx_run <- function(session, inputs) {
 #' }
 onnx_input_info <- function(session) {
   .validate_session(session)
-  
-  tryCatch({
-    result <- session$get_input_info()
-    
-    if (is.null(result)) {
-      warning("No input information available for this model")
-      return(list())
+
+  tryCatch(
+    {
+      result <- session$get_input_info()
+
+      if (is.null(result)) {
+        warning("No input information available for this model")
+        return(list())
+      }
+
+      return(result)
+    },
+    error = function(e) {
+      stop("Failed to retrieve input information: ", e$message)
     }
-    
-    return(result)
-  }, error = function(e) {
-    stop("Failed to retrieve input information: ", e$message)
-  })
+  )
 }
 
 #' Get Output Information
@@ -238,19 +301,22 @@ onnx_input_info <- function(session) {
 #' }
 onnx_output_info <- function(session) {
   .validate_session(session)
-  
-  tryCatch({
-    result <- session$get_output_info()
-    
-    if (is.null(result)) {
-      warning("No output information available for this model")
-      return(list())
+
+  tryCatch(
+    {
+      result <- session$get_output_info()
+
+      if (is.null(result)) {
+        warning("No output information available for this model")
+        return(list())
+      }
+
+      return(result)
+    },
+    error = function(e) {
+      stop("Failed to retrieve output information: ", e$message)
     }
-    
-    return(result)
-  }, error = function(e) {
-    stop("Failed to retrieve output information: ", e$message)
-  })
+  )
 }
 
 #' Get Execution Providers
@@ -268,19 +334,22 @@ onnx_output_info <- function(session) {
 #' }
 onnx_providers <- function(session) {
   .validate_session(session)
-  
-  tryCatch({
-    result <- session$get_providers()
-    
-    if (is.null(result)) {
-      warning("No provider information available for this session")
-      return(character(0))
+
+  tryCatch(
+    {
+      result <- session$get_providers()
+
+      if (is.null(result)) {
+        warning("No provider information available for this session")
+        return(character(0))
+      }
+
+      return(result)
+    },
+    error = function(e) {
+      stop("Failed to retrieve provider information: ", e$message)
     }
-    
-    return(result)
-  }, error = function(e) {
-    stop("Failed to retrieve provider information: ", e$message)
-  })
+  )
 }
 
 #' Get Model Path
@@ -298,16 +367,18 @@ onnx_providers <- function(session) {
 #' }
 onnx_model_path <- function(session) {
   .validate_session(session)
-  
-  tryCatch({
-    result <- session$get_model_path()
-    
-    return(result)
-  }, error = function(e) {
-    stop("Failed to retrieve model path: ", e$message)
-  })
-}
 
+  tryCatch(
+    {
+      result <- session$get_model_path()
+
+      return(result)
+    },
+    error = function(e) {
+      stop("Failed to retrieve model path: ", e$message)
+    }
+  )
+}
 
 
 #' Optimize Session Performance
@@ -342,12 +413,15 @@ batch_process_data <- function(session, data_list, batch_size = 32) {
     batch_data <- data_list[i:end_idx]
 
     batch_results <- lapply(batch_data, function(item) {
-      tryCatch({
-        onnx_run(session, item)
-      }, error = function(e) {
-        warning("Failed to process batch item: ", e$message)
-        return(NULL)
-      })
+      tryCatch(
+        {
+          onnx_run(session, item)
+        },
+        error = function(e) {
+          warning("Failed to process batch item: ", e$message)
+          return(NULL)
+        }
+      )
     })
 
     results <- c(results, batch_results)
@@ -373,22 +447,25 @@ batch_process_data <- function(session, data_list, batch_size = 32) {
 #' @return Result of inference or NULL if failed
 #' @export
 safe_onnx_run <- function(session, inputs, monitor_performance = FALSE) {
-  tryCatch({
-    if (monitor_performance) {
-      message("Running inference with performance monitoring...")
+  tryCatch(
+    {
+      if (monitor_performance) {
+        message("Running inference with performance monitoring...")
+      }
+
+      result <- onnx_run(session, inputs)
+
+      if (monitor_performance) {
+        message("Inference completed successfully")
+      }
+
+      return(result)
+    },
+    error = function(e) {
+      warning("Failed to run inference: ", e$message)
+      return(NULL)
     }
-    
-    result <- onnx_run(session, inputs)
-    
-    if (monitor_performance) {
-      message("Inference completed successfully")
-    }
-    
-    return(result)
-  }, error = function(e) {
-    warning("Failed to run inference: ", e$message)
-    return(NULL)
-  })
+  )
 }
 
 #' Safe ONNX Session Creation
@@ -402,13 +479,16 @@ safe_onnx_run <- function(session, inputs, monitor_performance = FALSE) {
 #' @return An RSession object or NULL if creation fails
 #' @export
 safe_onnx_session <- function(model_path, providers = NULL) {
-  tryCatch({
-    session <- onnx_session(model_path, providers)
-    return(session)
-  }, error = function(e) {
-    warning("Failed to create ONNX session: ", e$message)
-    return(NULL)
-  })
+  tryCatch(
+    {
+      session <- onnx_session(model_path, providers)
+      return(session)
+    },
+    error = function(e) {
+      warning("Failed to create ONNX session: ", e$message)
+      return(NULL)
+    }
+  )
 }
 
 #' ONNX Example Models
@@ -441,7 +521,9 @@ onnx_example_session <- function(model_name = "mnist", providers = NULL) {
   models <- onnx_example_models()
 
   if (length(models) == 0) {
-    stop("No example models available. Please download models from ONNX Model Zoo.")
+    stop(
+      "No example models available. Please download models from ONNX Model Zoo."
+    )
   }
 
   # Find model by name (with or without .onnx extension)
@@ -449,8 +531,12 @@ onnx_example_session <- function(model_name = "mnist", providers = NULL) {
   model_path <- models[grepl(paste0("^", model_name_clean), names(models))]
 
   if (length(model_path) == 0) {
-    stop("Model '", model_name, "' not found. Available models: ",
-         paste(names(models), collapse = ", "))
+    stop(
+      "Model '",
+      model_name,
+      "' not found. Available models: ",
+      paste(names(models), collapse = ", ")
+    )
   }
 
   onnx_session(model_path[1], providers = providers)

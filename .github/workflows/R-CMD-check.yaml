@@ -1,193 +1,141 @@
-# Workflow derived from https://github.com/r-lib/actions/tree/v2/examples
-# Need help debugging build failures? Start at https://github.com/r-lib/actions#where-to-find-help
+name: R CMD Check
+
 on:
   push:
     branches: [main, master]
   pull_request:
     branches: [main, master]
 
-name: R CMD Check
-
 permissions: read-all
 
+env:
+  R_KEEP_PKG_SOURCE: yes
+  ORT_VERSION: 1.29.0
+
 jobs:
+  rust:
+    name: Rust ${{ matrix.toolchain.name }} (vendored, offline)
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        toolchain:
+          - {name: '1.88', version: '1.88.0'}
+          - {name: stable, version: stable}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+
+      - uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
+        with:
+          r-version: release
+          use-public-rspm: true
+
+      - name: Install Rust
+        run: rustup toolchain install ${{ matrix.toolchain.version }} --profile minimal
+
+      - name: Check committed Rust vendor
+        shell: bash
+        env:
+          RUSTUP_TOOLCHAIN: ${{ matrix.toolchain.version }}
+          CARGO_NET_OFFLINE: "true"
+        run: |
+          set -euo pipefail
+          test -f src/rust/vendor.tar.xz
+          tar -tf src/rust/vendor.tar.xz >/dev/null
+          tar -xf src/rust/vendor.tar.xz -C src
+          mkdir -p src/.cargo
+          cp src/rust/vendor-config.toml src/.cargo/config.toml
+          cd src
+          cargo fmt --check --manifest-path rust/Cargo.toml
+          cargo clippy --offline --all-features --manifest-path rust/Cargo.toml -- -D warnings
+          cargo test --offline --all-features --manifest-path rust/Cargo.toml
+
   R-CMD-check:
     runs-on: ${{ matrix.config.os }}
-
     name: ${{ matrix.config.os }} (${{ matrix.config.r }})
-
     strategy:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: macos-15,       r: 'release'} # Latest macOS (Intel or ARM depending on availability, aiming for updated image)
+          - {os: macos-15, r: 'release'}
           - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,  r: 'release'}
-
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      R_KEEP_PKG_SOURCE: yes
-      ORT_VERSION: 1.23.2
-
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-24.04-arm, r: 'release'}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+        uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
           r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
       - name: Install ONNX Runtime
         shell: bash
         run: |
-          # Install ONNX Runtime for the current platform
-          echo "Installing ONNX Runtime for ${{ runner.os }}..."
-
-          ORT_VERSION="${{ env.ORT_VERSION }}"
-          ARCH=$(uname -m)
-          RUNNER_OS="${{ runner.os }}"
-
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
-            if [[ "$ARCH" == "aarch64" || "$ARCH" == "arm64" ]]; then
-              ORT_ARCHIVE="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"
-            else
-              ORT_ARCHIVE="onnxruntime-linux-x64-${ORT_VERSION}.tgz"
-            fi
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            if [[ "$ARCH" == "arm64" ]]; then
-              ORT_ARCHIVE="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"
-            else
-              ORT_ARCHIVE="onnxruntime-osx-x86_64-${ORT_VERSION}.tgz"
-            fi
-          elif [[ "$RUNNER_OS" == "Windows" ]]; then
-            ORT_ARCHIVE="onnxruntime-win-x64-${ORT_VERSION}.zip"
-          fi
-
-          ORT_URL="https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ARCHIVE}"
-
-          echo "Downloading ${ORT_URL}..."
+          set -euo pipefail
+          case "${RUNNER_OS}:${RUNNER_ARCH}" in
+            Linux:X64) ORT_ARCHIVE="onnxruntime-linux-x64-${ORT_VERSION}.tgz"; ORT_SHA256="c3fddc4f139a045b0c4902c57410f0694f1c2fdf9b6939fbe38b1aeae7cd14ba"; ORT_LIBRARY=libonnxruntime.so ;;
+            Linux:ARM64) ORT_ARCHIVE="onnxruntime-linux-aarch64-${ORT_VERSION}.tgz"; ORT_SHA256="e1799098ebc054b370f6176a450f158720f297818c613e5dc99b92e2ec82346f"; ORT_LIBRARY=libonnxruntime.so ;;
+            macOS:ARM64) ORT_ARCHIVE="onnxruntime-osx-arm64-${ORT_VERSION}.tgz"; ORT_SHA256="d0706fc34f315d8c88639d0a8c81f2e09e815f282cabed3493c06a054352cf92"; ORT_LIBRARY=libonnxruntime.dylib ;;
+            Windows:X64) ORT_ARCHIVE="onnxruntime-win-x64-${ORT_VERSION}.zip"; ORT_SHA256="c9b4b7086b529ad814f428c1bad028e20a25d7dc0699836775faace4ab5b78b2"; ORT_LIBRARY=onnxruntime.dll ;;
+            *) echo "Unsupported runner: ${RUNNER_OS}:${RUNNER_ARCH}" >&2; exit 1 ;;
+          esac
           cd inst/onnxruntime
-
-          # Remove old extraction if exists
-          rm -rf onnxruntime-*
-
-          # Download and extract
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            curl -L -o ort.zip "$ORT_URL"
-            unzip -q ort.zip
-            # Move files from extracted directory
-            for d in onnxruntime-*/; do
-              if [ -d "$d" ]; then
-                cp -r "$d"/* . 2>/dev/null || true
-                rm -rf "$d"
-              fi
-            done
-            rm -f ort.zip
-          else
-            curl -L -o ort.tgz "$ORT_URL"
-            tar xzf ort.tgz
-            rm ort.tgz
-            # Move files from extracted directory
-            for d in onnxruntime-*/; do
-              if [ -d "$d" ]; then
-                cp -r "$d"/* . 2>/dev/null || true
-                rm -rf "$d"
-              fi
-            done
-          fi
-
-          cd ../..
-
-          echo "ONNX Runtime installed to inst/onnxruntime/"
-          echo "Contents of lib directory:"
-          ls -la inst/onnxruntime/lib/ || echo "No lib directory found"
-
-      - name: Set ONNX Runtime Environment
-        shell: bash
-        run: |
-          # Set environment variables for ONNX Runtime
-          # This ensures we use our downloaded library, not system libraries
-
-          RUNNER_OS="${{ runner.os }}"
-
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            ORT_LIB="onnxruntime.dll"
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
-            ORT_LIB="libonnxruntime.dylib"
-          else
-            ORT_LIB="libonnxruntime.so"
-          fi
-
-          ORT_PATH="${{ github.workspace }}/inst/onnxruntime/lib/${ORT_LIB}"
-
-          if [ -f "$ORT_PATH" ]; then
-            echo "ORT_DYLIB_PATH=$ORT_PATH" >> $GITHUB_ENV
-            echo "ONNX Runtime library: $ORT_PATH"
-          else
-            echo "Warning: ONNX Runtime library not found at $ORT_PATH"
-            ls -la "${{ github.workspace }}/inst/onnxruntime/lib/" || echo "lib directory empty"
-          fi
+          curl --fail --location --retry 3 --output "$ORT_ARCHIVE" "https://github.com/microsoft/onnxruntime/releases/download/v${ORT_VERSION}/${ORT_ARCHIVE}"
+          printf '%s  %s\n' "$ORT_SHA256" "$ORT_ARCHIVE" | shasum -a 256 -c -
+          if [[ "$ORT_ARCHIVE" == *.zip ]]; then unzip -q "$ORT_ARCHIVE"; else tar -xzf "$ORT_ARCHIVE"; fi
+          extracted_dir=$(find . -maxdepth 1 -type d -name 'onnxruntime-*' -print -quit)
+          test -n "$extracted_dir"
+          cp -R "$extracted_dir"/. .
+          rm -rf "$extracted_dir" "$ORT_ARCHIVE"
+          ORT_PATH="$GITHUB_WORKSPACE/inst/onnxruntime/lib/$ORT_LIBRARY"
+          test -f "$ORT_PATH"
+          echo "ORT_DYLIB_PATH=$ORT_PATH" >> "$GITHUB_ENV"
 
       - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+        uses: r-lib/actions/setup-r-dependencies@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
-          extra-packages: any::rcmdcheck, any::rextendr
+          extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Vendor Rust Dependencies
-        run: |
-          # Vendor Rust dependencies for CRAN compliance
-          Rscript -e "rextendr::vendor_pkgs()"
-          
-      - uses: r-lib/actions/check-r-package@v2
+      - name: Check committed Rust vendor
+        shell: bash
+        run: tar -tf src/rust/vendor.tar.xz >/dev/null
+
+      - uses: r-lib/actions/check-r-package@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
-          error-on: '"error"'
+          error-on: '"warning"'
 
   R-CMD-check-no-ort:
-    runs-on: ${{ matrix.config.os }}
-
-    name: ${{ matrix.config.os }} (no-ort)
-
+    name: ubuntu-latest (no ORT, R ${{ matrix.r }}, offline)
+    runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        config:
-          - {os: macos-latest,   r: 'release'}
-          - {os: macos-15,       r: 'release'}
-          - {os: windows-latest, r: 'release'}
-          - {os: ubuntu-latest,  r: 'release'}
-
-    env:
-      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
-      R_KEEP_PKG_SOURCE: yes
-      # NO ORT_VERSION set - simulates CRAN offline environment
-
+        r: [release, '4.0']
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
 
       - name: Setup R
-        uses: r-lib/actions/setup-r@v2
+        uses: r-lib/actions/setup-r@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
-          r-version: ${{ matrix.config.r }}
-          http-user-agent: ${{ matrix.config.http-user-agent }}
+          r-version: ${{ matrix.r }}
           use-public-rspm: true
 
-      # NO ONNX Runtime installation step - tests skip logic
+      - name: Install Rust 1.88
+        run: rustup toolchain install 1.88.0 --profile minimal
 
       - name: Install dependencies
-        uses: r-lib/actions/setup-r-dependencies@v2
+        uses: r-lib/actions/setup-r-dependencies@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
-          extra-packages: any::rcmdcheck, any::rextendr
+          extra-packages: any::rcmdcheck
           needs: check
 
-      - name: Vendor Rust Dependencies
-        run: |
-          # Vendor Rust dependencies for CRAN compliance
-          Rscript -e "rextendr::vendor_pkgs()"
-
-      - uses: r-lib/actions/check-r-package@v2
+      - name: Check package without ONNX Runtime
+        env:
+          CARGO_NET_OFFLINE: "true"
+          RUSTUP_TOOLCHAIN: 1.88.0
+          http_proxy: http://127.0.0.1:9
+          https_proxy: http://127.0.0.1:9
+        uses: r-lib/actions/check-r-package@929c772977a3a13c8733b363bf5a2f685c25dd91
         with:
-          error-on: '"error"'
+          error-on: '"warning"'

@@ -7,7 +7,7 @@ on:
 
 jobs:
   r-universe:
-    uses: r-universe-org/workflows/.github/workflows/build.yml@v3
+    uses: r-universe-org/workflows/.github/workflows/build.yml@2025515d8de93f38f70bb8ff6384e06821a3b5bd
     permissions:
       contents: read
       packages: read

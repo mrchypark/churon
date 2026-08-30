@@ -29,19 +29,26 @@
 #' @return Logical indicating whether setup was successful
 #' @keywords internal
 setup_onnx_runtime <- function() {
-  lib_path <- onnx_runtime_lib_path()
+  configured_path <- Sys.getenv("ORT_DYLIB_PATH", unset = "")
+  lib_path <- if (nzchar(configured_path) && file.exists(configured_path)) {
+    configured_path
+  } else {
+    onnx_runtime_lib_path()
+  }
 
   if (!file.exists(lib_path)) {
-    # ONNX Runtime not found - environment variable set to empty
-    Sys.setenv(ORT_DYLIB_PATH = "")
+    Sys.unsetenv("ORT_DYLIB_PATH")
     return(FALSE)
   }
 
   # Set environment variable for ONNX Runtime
   Sys.setenv(ORT_DYLIB_PATH = normalizePath(lib_path))
-  
+
   # Log for debugging (useful for CI/r-universe)
-  packageStartupMessage("ChurOn: Setup ONNX Runtime at ", normalizePath(lib_path))
+  packageStartupMessage(
+    "ChurOn: Setup ONNX Runtime at ",
+    normalizePath(lib_path)
+  )
 
   # Also set library path for dynamic loading
   lib_dir <- dirname(lib_path)
@@ -77,9 +84,9 @@ setup_onnx_runtime <- function() {
 }
 
 #' Check if ONNX Runtime is Available
-#' 
+#'
 #' This function checks if ONNX Runtime is properly configured and available.
-#' 
+#'
 #' @return Logical indicating whether ONNX Runtime is available
 #' @export
 check_onnx_runtime_available <- function() {
@@ -91,9 +98,9 @@ check_onnx_runtime_available <- function() {
 }
 
 #' Get ONNX Runtime Information
-#' 
+#'
 #' This function returns information about the current ONNX Runtime configuration.
-#' 
+#'
 #' @return A list containing ONNX Runtime configuration information
 #' @export
 get_onnx_runtime_info <- function() {

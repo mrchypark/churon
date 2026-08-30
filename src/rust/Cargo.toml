@@ -2,17 +2,18 @@
 name = 'churon'
 version = '0.1.0'
 edition = '2021'
+rust-version = '1.88'
 
 [lib]
 crate-type = [ 'staticlib' ]
 name = 'churon'
 
 [dependencies]
-extendr-api = { version = "0.8.1", features = ["ndarray"] }
+extendr-api = { version = "0.9.0", features = ["ndarray"] }
 ndarray = "0.17.2"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-ort = { version = "=2.0.0-rc.10", default-features = false, features = ["load-dynamic"] }
+ort = { version = "=2.0.0-rc.13", default-features = false, features = ["api-27", "load-dynamic", "ndarray"] }
 
 [features]
 default = []
@@ -31,5 +32,3 @@ lto = "fat"
 codegen-units = 1
 strip = true
 panic = "unwind"
-
-

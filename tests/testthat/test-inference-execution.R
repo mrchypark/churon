@@ -1,5 +1,4 @@
 test_that("basic inference execution", {
-  skip_on_os("windows")
   library(churon)
 
   # Check if ONNX Runtime is available
@@ -11,7 +10,6 @@ test_that("basic inference execution", {
 })
 
 test_that("inference with invalid input data", {
-  skip_on_os("windows")
   library(churon)
 
   # Check if ONNX Runtime is available
@@ -41,7 +39,7 @@ test_that("inference with invalid input data", {
     # Test with wrong input names
     expect_error(
       onnx_run(session, list(wrong_name = matrix(1:4, 2, 2))),
-      "Inference failed"
+      "Missing required input tensor"
     )
   } else {
     skip("No ONNX model files found for testing")

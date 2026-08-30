@@ -4,11 +4,12 @@
 \alias{install_onnx_runtime}
 \title{Install ONNX Runtime}
 \usage{
-install_onnx_runtime(version = "1.23.2", quiet = FALSE, ...)
+install_onnx_runtime(version = "1.29.0", quiet = FALSE, ...)
 }
 \arguments{
 \item{version}{Character string specifying the ONNX Runtime version to install.
-Defaults to "1.23.2". Use "latest" to download the latest stable version.}
+Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
+"latest" selects "1.29.0".}
 
 \item{quiet}{Logical. If TRUE, suppress download progress messages.}
 
@@ -28,7 +29,7 @@ is not already installed on your system.
 install_onnx_runtime()
 
 # Install specific version
-install_onnx_runtime(version = "1.23.0")
+install_onnx_runtime(version = "1.28.0")
 
 # Install with no output
 install_onnx_runtime(quiet = TRUE)

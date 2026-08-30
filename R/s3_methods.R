@@ -41,31 +41,50 @@ print.TensorInfo <- function(x, ...) {
 #' @export
 print.RSession <- function(x, ...) {
   cat("ONNX Runtime Session:\n")
-  
-  tryCatch({
-    cat("  Model Path:", x$get_model_path(), "\n")
-    
-    input_info <- x$get_input_info()
-    cat("  Inputs (", length(input_info), "):\n", sep = "")
-    for (i in seq_along(input_info)) {
-      info <- input_info[[i]]
-      cat("    ", info$name, ": ", paste(info$shape, collapse = " x "), 
-          " (", info$data_type, ")\n", sep = "")
+
+  tryCatch(
+    {
+      cat("  Model Path:", x$get_model_path(), "\n")
+
+      input_info <- x$get_input_info()
+      cat("  Inputs (", length(input_info), "):\n", sep = "")
+      for (i in seq_along(input_info)) {
+        info <- input_info[[i]]
+        cat(
+          "    ",
+          info$name,
+          ": ",
+          paste(info$shape, collapse = " x "),
+          " (",
+          info$data_type,
+          ")\n",
+          sep = ""
+        )
+      }
+
+      output_info <- x$get_output_info()
+      cat("  Outputs (", length(output_info), "):\n", sep = "")
+      for (i in seq_along(output_info)) {
+        info <- output_info[[i]]
+        cat(
+          "    ",
+          info$name,
+          ": ",
+          paste(info$shape, collapse = " x "),
+          " (",
+          info$data_type,
+          ")\n",
+          sep = ""
+        )
+      }
+
+      providers <- x$get_providers()
+      cat("  Execution Providers:", paste(providers, collapse = ", "), "\n")
+    },
+    error = function(e) {
+      cat("  Error retrieving session information:", e$message, "\n")
     }
-    
-    output_info <- x$get_output_info()
-    cat("  Outputs (", length(output_info), "):\n", sep = "")
-    for (i in seq_along(output_info)) {
-      info <- output_info[[i]]
-      cat("    ", info$name, ": ", paste(info$shape, collapse = " x "), 
-          " (", info$data_type, ")\n", sep = "")
-    }
-    
-    providers <- x$get_providers()
-    cat("  Execution Providers:", paste(providers, collapse = ", "), "\n")
-  }, error = function(e) {
-    cat("  Error retrieving session information:", e$message, "\n")
-  })
-  
+  )
+
   invisible(x)
 }
