@@ -14,8 +14,6 @@ RSession <- new.env(parent = emptyenv())
 
 RSession$from_path <- function(path) .Call(wrap__RSession__from_path, path)
 
-RSession$check_input <- function() invisible(.Call(wrap__RSession__check_input, self))
-
 RSession$get_input_info <- function() .Call(wrap__RSession__get_input_info, self)
 
 RSession$get_output_info <- function() .Call(wrap__RSession__get_output_info, self)

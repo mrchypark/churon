@@ -1,5 +1,4 @@
 test_that("error handling for invalid model paths", {
-  skip_on_os("windows")
   library(churon)
 
   # Test non-existent file
@@ -7,26 +6,28 @@ test_that("error handling for invalid model paths", {
     onnx_session("/path/to/nonexistent/model.onnx"),
     "Model file not found"
   )
+})
 
-  # Test invalid file format
+test_that("error handling for invalid model contents", {
+  library(churon)
+  skip_if_not(check_onnx_runtime_available())
+
   temp_file <- tempfile(fileext = ".txt")
   writeLines("not an onnx model", temp_file)
   on.exit(unlink(temp_file))
 
   expect_error(
     suppressWarnings(onnx_session(temp_file)),
-    "Failed to create ONNX session"
+    "Failed to load ONNX model"
   )
 
-  # For now, just test file operations
   expect_true(file.exists(temp_file))
   expect_false(grepl("\\.onnx$", temp_file))
 })
 
 test_that("error handling for invalid execution providers", {
-  skip_on_os("windows")
   library(churon)
-  
+
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
     skip("ONNX Runtime not installed - run install_onnx_runtime()")
@@ -58,9 +59,8 @@ test_that("error handling for invalid execution providers", {
 })
 
 test_that("error handling for inference failures", {
-  skip_on_os("windows")
   library(churon)
-  
+
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
     skip("ONNX Runtime not installed - run install_onnx_runtime()")
@@ -89,7 +89,6 @@ test_that("error handling for inference failures", {
 })
 
 test_that("error messages are informative", {
-  skip_on_os("windows")
   library(churon)
 
   # Error messages should include:

@@ -5,7 +5,8 @@
 #' is not already installed on your system.
 #'
 #' @param version Character string specifying the ONNX Runtime version to install.
-#'   Defaults to "1.23.2". Use "latest" to download the latest stable version.
+#'   Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
+#'   "latest" selects "1.29.0".
 #' @param quiet Logical. If TRUE, suppress download progress messages.
 #' @param ... Additional arguments passed to download.file()
 #'
@@ -17,12 +18,16 @@
 #' install_onnx_runtime()
 #'
 #' # Install specific version
-#' install_onnx_runtime(version = "1.23.0")
+#' install_onnx_runtime(version = "1.28.0")
 #'
 #' # Install with no output
 #' install_onnx_runtime(quiet = TRUE)
 #' }
-install_onnx_runtime <- function(version = "1.23.2", quiet = FALSE, ...) {
+install_onnx_runtime <- function(version = "1.29.0", quiet = FALSE, ...) {
+  if (!is.character(version) || length(version) != 1L || is.na(version)) {
+    stop("version must be one non-missing character string.")
+  }
+
   # Platform detection
   platform <- Sys.info()[["sysname"]]
   machine <- Sys.info()[["machine"]]
@@ -30,9 +35,12 @@ install_onnx_runtime <- function(version = "1.23.2", quiet = FALSE, ...) {
 
   # Determine download URL
   ort_version <- if (identical(tolower(version), "latest")) {
-    "1.23.2"  # Default to known working version for now
+    "1.29.0"
   } else {
     version
+  }
+  if (!ort_version %in% c("1.28.0", "1.29.0")) {
+    stop("This installer supports ONNX Runtime versions 1.28.0 and 1.29.0.")
   }
 
   # Construct URL based on platform
@@ -43,27 +51,36 @@ install_onnx_runtime <- function(version = "1.23.2", quiet = FALSE, ...) {
       ort_arch <- "x64"
     }
     ort_archive <- sprintf("onnxruntime-linux-%s-%s.tgz", ort_arch, ort_version)
-    ort_url <- sprintf("https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
-                       ort_version, ort_archive)
+    ort_url <- sprintf(
+      "https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
+      ort_version,
+      ort_archive
+    )
   } else if (platform == "Darwin") {
-    if (arch == "arm64") {
-      ort_archive <- sprintf("onnxruntime-osx-arm64-%s.tgz", ort_version)
-    } else {
-      ort_archive <- sprintf("onnxruntime-osx-x86_64-%s.tgz", ort_version)
+    if (arch != "arm64") {
+      stop("ONNX Runtime >= 1.28.0 does not support macOS x86_64.")
     }
-    ort_url <- sprintf("https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
-                       ort_version, ort_archive)
+    ort_archive <- sprintf("onnxruntime-osx-arm64-%s.tgz", ort_version)
+    ort_url <- sprintf(
+      "https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
+      ort_version,
+      ort_archive
+    )
   } else if (platform == "Windows") {
     if (arch == "arm64") {
       ort_archive <- sprintf("onnxruntime-win-arm64-%s.zip", ort_version)
     } else {
       ort_archive <- sprintf("onnxruntime-win-x64-%s.zip", ort_version)
     }
-    ort_url <- sprintf("https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
-                       ort_version, ort_archive)
+    ort_url <- sprintf(
+      "https://github.com/microsoft/onnxruntime/releases/download/v%s/%s",
+      ort_version,
+      ort_archive
+    )
   } else {
     stop(sprintf("Unsupported platform: %s", platform))
   }
+  expected_sha256 <- .onnx_runtime_sha256(ort_version, ort_archive)
 
   # Create temporary directory for download
   temp_dir <- tempfile("onnxruntime")
@@ -77,118 +94,182 @@ install_onnx_runtime <- function(version = "1.23.2", quiet = FALSE, ...) {
 
   # Download
   if (!quiet) {
-    message(sprintf("Downloading ONNX Runtime %s for %s-%s...", ort_version, platform, arch))
+    message(sprintf(
+      "Downloading ONNX Runtime %s for %s-%s...",
+      ort_version,
+      platform,
+      arch
+    ))
     message(sprintf("URL: %s", ort_url))
   }
 
-  tryCatch({
-    if (platform == "Windows") {
-      utils::download.file(ort_url, ort_file, mode = "wb", quiet = quiet, ...)
-    } else {
-      utils::download.file(ort_url, ort_file, mode = "wb", quiet = quiet, ...)
-    }
-
-    # Extract
-    if (!quiet) {
-      message("Extracting...")
-    }
-
-    if (platform == "Windows") {
-      utils::unzip(ort_file, exdir = temp_dir, quiet = TRUE)
-    } else {
-      utils::untar(ort_file, exdir = temp_dir, compressed = TRUE)
-    }
-
-    # Find the extracted directory
-    extracted_dirs <- list.dirs(temp_dir, full.names = FALSE, recursive = FALSE)
-    extracted_dir <- file.path(temp_dir, extracted_dirs[grepl("onnxruntime", extracted_dirs)])
-
-    if (length(extracted_dir) == 0 || !dir.exists(extracted_dir)) {
-      # Try to find the extracted files directly
-      extracted_dir <- temp_dir
-    }
-
-    # Determine library path
-    lib_dir <- file.path(.libPaths()[1], "churon", "onnxruntime", "lib")
-
-    # Create directory if needed
-    if (!dir.exists(lib_dir)) {
-      dir.create(lib_dir, showWarnings = FALSE, recursive = TRUE)
-    }
-
-    # Copy library files
-    if (!quiet) {
-      message(sprintf("Installing to %s...", lib_dir))
-    }
-
-    # Helper to find and copy library file
-    lib_filename <- switch(platform,
-      "Linux" = "libonnxruntime.so",
-      "Darwin" = "libonnxruntime.dylib",
-      "Windows" = "onnxruntime.dll"
-    )
-
-    # Search for library file recursively
-    found_lib <- list.files(extracted_dir, pattern = paste0("^", lib_filename, "$"),
-                           recursive = TRUE, full.names = TRUE)
-
-    if (length(found_lib) > 0) {
-      # Use the first match (usually the one in lib/ or root)
-      file.copy(found_lib[1], file.path(lib_dir, lib_filename), overwrite = TRUE)
-
-      # Also try to copy other contents of lib/ if it exists
-      lib_src_dir <- file.path(extracted_dir, "lib")
-      if (dir.exists(lib_src_dir)) {
-        files_to_copy <- list.files(lib_src_dir, full.names = TRUE)
-        # Exclude the one we just copied if it's the same
-        files_to_copy <- files_to_copy[normalizePath(files_to_copy) != normalizePath(found_lib[1])]
-        if (length(files_to_copy) > 0) {
-          file.copy(files_to_copy, lib_dir, overwrite = TRUE)
-        }
+  tryCatch(
+    {
+      if (platform == "Windows") {
+        utils::download.file(ort_url, ort_file, mode = "wb", quiet = quiet, ...)
+      } else {
+        utils::download.file(ort_url, ort_file, mode = "wb", quiet = quiet, ...)
       }
-    } else {
-      warning("Could not find ", lib_filename, " in extracted archive")
+
+      actual_sha256 <- digest::digest(
+        ort_file,
+        algo = "sha256",
+        serialize = FALSE,
+        file = TRUE
+      )
+      if (!identical(actual_sha256, expected_sha256)) {
+        stop("Downloaded ONNX Runtime archive failed SHA-256 verification")
+      }
+
+      # Extract
+      if (!quiet) {
+        message("Extracting...")
+      }
+
+      if (platform == "Windows") {
+        utils::unzip(ort_file, exdir = temp_dir, quiet = TRUE)
+      } else {
+        utils::untar(ort_file, exdir = temp_dir)
+      }
+
+      # Find the extracted directory
+      extracted_dirs <- list.dirs(
+        temp_dir,
+        full.names = FALSE,
+        recursive = FALSE
+      )
+      extracted_dir <- file.path(
+        temp_dir,
+        extracted_dirs[grepl("onnxruntime", extracted_dirs)]
+      )
+
+      if (length(extracted_dir) == 0 || !dir.exists(extracted_dir)) {
+        # Try to find the extracted files directly
+        extracted_dir <- temp_dir
+      }
+
+      # Determine library path
+      lib_dir <- file.path(.libPaths()[1], "churon", "onnxruntime", "lib")
+
+      # Create directory if needed
+      if (!dir.exists(lib_dir)) {
+        dir.create(lib_dir, showWarnings = FALSE, recursive = TRUE)
+      }
+
+      # Copy library files
+      if (!quiet) {
+        message(sprintf("Installing to %s...", lib_dir))
+      }
+
+      # Helper to find and copy library file
+      lib_filename <- switch(
+        platform,
+        "Linux" = "libonnxruntime.so",
+        "Darwin" = "libonnxruntime.dylib",
+        "Windows" = "onnxruntime.dll"
+      )
+
+      # Search for library file recursively
+      found_lib <- list.files(
+        extracted_dir,
+        pattern = paste0("^", lib_filename, "$"),
+        recursive = TRUE,
+        full.names = TRUE
+      )
+
+      if (length(found_lib) > 0) {
+        # Use the first match (usually the one in lib/ or root)
+        copied <- file.copy(
+          found_lib[1],
+          file.path(lib_dir, lib_filename),
+          overwrite = TRUE
+        )
+        if (!copied) {
+          stop(
+            "Failed to copy the ONNX Runtime library into the package library."
+          )
+        }
+
+        # Also try to copy other contents of lib/ if it exists
+        lib_src_dir <- file.path(extracted_dir, "lib")
+        if (dir.exists(lib_src_dir)) {
+          files_to_copy <- list.files(lib_src_dir, full.names = TRUE)
+          # Exclude the one we just copied if it's the same
+          files_to_copy <- files_to_copy[
+            normalizePath(files_to_copy) != normalizePath(found_lib[1])
+          ]
+          if (length(files_to_copy) > 0) {
+            file.copy(files_to_copy, lib_dir, overwrite = TRUE)
+          }
+        }
+      } else {
+        stop("Could not find ", lib_filename, " in extracted archive")
+      }
+
+      # Copy include directory (for future use)
+      include_dir <- file.path(
+        .libPaths()[1],
+        "churon",
+        "onnxruntime",
+        "include"
+      )
+      if (!dir.exists(include_dir)) {
+        dir.create(include_dir, showWarnings = FALSE, recursive = TRUE)
+      }
+      include_src_dir <- file.path(extracted_dir, "include")
+      if (dir.exists(include_src_dir)) {
+        file.copy(
+          list.files(include_src_dir, full.names = TRUE, recursive = TRUE),
+          include_dir,
+          overwrite = TRUE,
+          recursive = TRUE
+        )
+      }
+
+      # Clean up
+      unlink(temp_dir, recursive = TRUE)
+
+      # Verify installation
+      lib_file <- onnx_runtime_lib_path()
+      if (!file.exists(lib_file)) {
+        stop("Installation verification failed: library file not found")
+      }
+
+      if (!quiet) {
+        message(sprintf("ONNX Runtime installed successfully!"))
+        message(sprintf("Library: %s", lib_file))
+      }
+
+      # Return success
+      invisible(TRUE)
+    },
+    error = function(e) {
+      unlink(temp_dir, recursive = TRUE)
+      stop(sprintf("Failed to install ONNX Runtime: %s", e$message))
     }
+  )
+}
 
-    # Copy lib directory (legacy fallback)
-    lib_src_dir <- file.path(extracted_dir, "lib")
-    if (dir.exists(lib_src_dir) && length(found_lib) == 0) {
-      file.copy(list.files(lib_src_dir, full.names = TRUE),
-                lib_dir, overwrite = TRUE)
-    }
-
-    # Copy include directory (for future use)
-    include_dir <- file.path(.libPaths()[1], "churon", "onnxruntime", "include")
-    if (!dir.exists(include_dir)) {
-      dir.create(include_dir, showWarnings = FALSE, recursive = TRUE)
-    }
-    include_src_dir <- file.path(extracted_dir, "include")
-    if (dir.exists(include_src_dir)) {
-      file.copy(list.files(include_src_dir, full.names = TRUE, recursive = TRUE),
-                include_dir, overwrite = TRUE, recursive = TRUE)
-    }
-
-    # Clean up
-    unlink(temp_dir, recursive = TRUE)
-
-    # Verify installation
-    lib_file <- onnx_runtime_lib_path()
-    if (!file.exists(lib_file)) {
-      stop("Installation verification failed: library file not found")
-    }
-
-    if (!quiet) {
-      message(sprintf("ONNX Runtime installed successfully!"))
-      message(sprintf("Library: %s", lib_file))
-    }
-
-    # Return success
-    invisible(TRUE)
-
-  }, error = function(e) {
-    unlink(temp_dir, recursive = TRUE)
-    stop(sprintf("Failed to install ONNX Runtime: %s", e$message))
-  })
+.onnx_runtime_sha256 <- function(version, archive) {
+  checksums <- c(
+    "1.28.0/onnxruntime-linux-aarch64-1.28.0.tgz" = "e15ff8b5d85afe6c144d97c6fd432254bf76a219daaf17658087d6ecb3e8f0bb",
+    "1.28.0/onnxruntime-linux-x64-1.28.0.tgz" = "a3e1b79d7bb1bf09696ce675f49e4064e6c81f6202b8225624fff0e93f8d6407",
+    "1.28.0/onnxruntime-osx-arm64-1.28.0.tgz" = "1268b359718099bde2cedb55787f182a130067bc4f31e8c88478c445b850d3d8",
+    "1.28.0/onnxruntime-win-arm64-1.28.0.zip" = "cbe4547463ece092b505c3581376ed5896d22b5429f39d5e645e425ecdd369ad",
+    "1.28.0/onnxruntime-win-x64-1.28.0.zip" = "abef733dacbe2f571547a7150b479b5cb9cc0df22f96c24983a42cadb1b4f8bc",
+    "1.29.0/onnxruntime-linux-aarch64-1.29.0.tgz" = "e1799098ebc054b370f6176a450f158720f297818c613e5dc99b92e2ec82346f",
+    "1.29.0/onnxruntime-linux-x64-1.29.0.tgz" = "c3fddc4f139a045b0c4902c57410f0694f1c2fdf9b6939fbe38b1aeae7cd14ba",
+    "1.29.0/onnxruntime-osx-arm64-1.29.0.tgz" = "d0706fc34f315d8c88639d0a8c81f2e09e815f282cabed3493c06a054352cf92",
+    "1.29.0/onnxruntime-win-arm64-1.29.0.zip" = "a094a49c3ced0f9fca554647cc7566ae99d93a63a8ce6bf47975561c2de7608e",
+    "1.29.0/onnxruntime-win-x64-1.29.0.zip" = "c9b4b7086b529ad814f428c1bad028e20a25d7dc0699836775faace4ab5b78b2"
+  )
+  checksum <- unname(checksums[paste(version, archive, sep = "/")])
+  if (length(checksum) != 1L || is.na(checksum)) {
+    stop(
+      "No verified SHA-256 checksum is available for this ONNX Runtime archive."
+    )
+  }
+  checksum
 }
 
 #' Check if ONNX Runtime is Installed
@@ -213,7 +294,8 @@ onnx_runtime_lib_path <- function() {
   platform <- Sys.info()[["sysname"]]
   pkg_path <- system.file(package = "churon")
 
-  lib_name <- switch(platform,
+  lib_name <- switch(
+    platform,
     "Linux" = "libonnxruntime.so",
     "Darwin" = "libonnxruntime.dylib",
     "Windows" = "onnxruntime.dll",
@@ -222,5 +304,3 @@ onnx_runtime_lib_path <- function() {
 
   file.path(pkg_path, "onnxruntime", "lib", lib_name)
 }
-
-

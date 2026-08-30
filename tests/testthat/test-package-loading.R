@@ -34,8 +34,10 @@ test_that("exported functions are available", {
 
   # Check that all expected functions are exported
   for (func in expected_functions) {
-    expect_true(func %in% exported_functions,
-                info = paste("Function", func, "should be exported"))
+    expect_true(
+      func %in% exported_functions,
+      info = paste("Function", func, "should be exported")
+    )
   }
 })
 
@@ -45,6 +47,6 @@ test_that("package metadata is correct", {
 
   expect_equal(desc$Package, "churon")
   expect_match(desc$Title, "'ONNX' Runtime")
-  expect_match(desc$Description, "ONNX")  # Check for ONNX mention
+  expect_match(desc$Description, "ONNX") # Check for ONNX mention
   expect_equal(desc$License, "MIT + file LICENSE")
 })

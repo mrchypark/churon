@@ -1,5 +1,5 @@
 # CRAN Check Script for churon
-# This script mimics the CRAN submission checks, including Rust vendoring.
+# This script checks the committed source package without network access.
 
 check_cran <- function() {
   # Ensure we are in the package root
@@ -9,51 +9,33 @@ check_cran <- function() {
 
   message("=== Starting CRAN Check Process ===")
 
-  # 1. Vendor Rust Dependencies
-  # CRAN does not allow internet access during build, so we must bundle crates.
-  message("\n[1/4] Vendoring Rust dependencies...")
-  if (requireNamespace("rextendr", quietly = TRUE)) {
-    # This downloads crates to src/rust/vendor and updates Cargo.toml
-    rextendr::vendor_pkgs()
-    message("Vendoring complete.")
-  } else {
-    stop("rextendr package is required. Run tools/setup-dev.R")
+  # CRAN builds from the committed vendor archive without network access.
+  if (!file.exists("src/rust/vendor.tar.xz")) {
+    stop("src/rust/vendor.tar.xz is required for an offline build.")
   }
 
-  # 2. Build Source Package
-  message("\n[2/4] Building source package...")
-  # Clean previous builds
-  previous_tarballs <- list.files(pattern = "\\.tar\\.gz$")
-  if (length(previous_tarballs) > 0) {
-    file.remove(previous_tarballs)
-  }
-  
-  # Build
+  message("\n[1/2] Building source package...")
   pkg_path <- devtools::build(quiet = TRUE)
   message(sprintf("Package built at: %s", pkg_path))
 
-  # 3. Run R CMD check --as-cran
-  message("\n[3/4] Running R CMD check --as-cran...")
+  message("\n[2/2] Running R CMD check --as-cran offline...")
   message("This may take a while...")
-  
-  # We need to make sure ONNX Runtime is available for the check
-  # The check runs in a separate process, so environment variables must be passed if needed
-  
+
   check_results <- rcmdcheck::rcmdcheck(
     path = pkg_path,
     args = c("--as-cran", "--no-manual"),
-    error_on = "never" # We want to see the full report even on error
+    env = c(
+      http_proxy = "http://127.0.0.1:9",
+      https_proxy = "http://127.0.0.1:9",
+      "_R_CHECK_CRAN_INCOMING_REMOTE_" = "false"
+    ),
+    error_on = "warning"
   )
 
   # 4. Report Results
   message("\n=== Check Results ===")
   print(check_results)
 
-  # 5. Cleanup (Optional - commented out for debugging)
-  # message("\n[5/5] Cleaning up vendored files...")
-  # system("rm -rf src/rust/vendor")
-  # system("git checkout src/rust/Cargo.toml") 
-  
   if (length(check_results$errors) > 0) {
     message("\n❌ Check FAILED with errors.")
     return(invisible(FALSE))
