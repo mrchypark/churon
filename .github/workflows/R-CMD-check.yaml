@@ -146,7 +146,7 @@ jobs:
         if: matrix.r == '4.0'
         shell: Rscript {0}
         run: |
-          install.packages(c("digest", "rcmdcheck", "remotes"))
+          install.packages(c("digest", "rcmdcheck", "remotes", "waldo"))
           remotes::install_version("testthat", "3.2.3", upgrade = "never")
 
       - name: Check package without ONNX Runtime
