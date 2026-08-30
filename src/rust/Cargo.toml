@@ -28,4 +28,6 @@ ort-openvino = ["ort/openvino"]
 
 [profile.release]
 opt-level = 2
+lto = "fat"
+codegen-units = 1
 panic = "unwind"
