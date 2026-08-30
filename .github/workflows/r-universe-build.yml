@@ -8,10 +8,5 @@ on:
 jobs:
   r-universe:
     uses: r-universe-org/workflows/.github/workflows/build.yml@2025515d8de93f38f70bb8ff6384e06821a3b5bd
-    permissions:
-      contents: read
-      packages: read
     with:
-      repository: https://github.com/${{ github.repository }}
-      ref: ${{ github.sha }}
-    secrets: inherit
+      universe: ${{ github.repository_owner }}

@@ -46,9 +46,9 @@ $(STATLIB):
 		export LIBRARY_PATH="${LIBRARY_PATH};$(CURDIR)/$(TARGET_DIR)/libgcc_mock" && \
 		if [ -f "ort_config.env" ]; then . ./ort_config.env; fi && \
 		if [ -f ./rust/vendor.tar.xz ]; then \
-			cargo build --target=$(TARGET) --lib --release --offline --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+			cargo build --jobs 2 --target=$(TARGET) --lib --release --offline --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
 		else \
-			cargo build --target=$(TARGET) --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
+			cargo build --jobs 2 --target=$(TARGET) --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR); \
 		fi
 	if [ "$(NOT_CRAN)" != "true" ]; then \
 		rm -Rf $(CARGOTMP) && \

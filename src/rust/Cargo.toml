@@ -27,8 +27,7 @@ ort-openvino = ["ort/openvino"]
 
 
 [profile.release]
-opt-level = "z"
+opt-level = 2
 lto = "fat"
 codegen-units = 1
-strip = true
 panic = "unwind"
