@@ -30,7 +30,7 @@ jobs:
           use-public-rspm: true
 
       - name: Install Rust
-        run: rustup toolchain install ${{ matrix.toolchain.version }} --profile minimal
+        run: rustup toolchain install ${{ matrix.toolchain.version }} --profile minimal --component rustfmt,clippy
 
       - name: Check committed Rust vendor
         shell: bash
