@@ -19,7 +19,7 @@ is not already installed on your system."><!-- mathjax --><script src="https://c
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">churon</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.11</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.12</span>
       </span>
     </div>
 
@@ -54,7 +54,7 @@ is not already installed on your system.</p>
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.29.0"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.29.0"</span>, quiet <span class="op">=</span> <span class="cn">FALSE</span>, <span class="va">destdir</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
@@ -71,6 +71,10 @@ Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
 <dd><p>Logical. If TRUE, suppress download progress messages.</p></dd>
 
 
+<dt id="arg-destdir">destdir<a class="anchor" aria-label="anchor" href="#arg-destdir"></a></dt>
+<dd><p>Required character string naming the installation directory.</p></dd>
+
+
 <dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
 <dd><p>Additional arguments passed to download.file()</p></dd>
 
@@ -79,21 +83,15 @@ Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
     <h2>Value</h2>
     <p>Invisible TRUE on success, stops with error on failure.</p>
     </div>
-
-    <div id="ref-examples">
-    <h2>Examples</h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Install ONNX Runtime</span></span></span>
-<span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Install specific version</span></span></span>
-<span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>version <span class="op">=</span> <span class="st">"1.28.0"</span><span class="op">)</span></span></span>
-<span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Install with no output</span></span></span>
-<span class="r-in"><span><span class="fu">install_onnx_runtime</span><span class="op">(</span>quiet <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
-</code></pre></div>
+    <div id="details">
+    <h2>Details</h2>
+    <p>This function installs external software only when explicitly called. Supply
+<code>destdir</code> yourself; no installation directory is selected by default.
+The library is placed in <code>destdir/lib</code> and configured for this R session.
+In later sessions, set <code>ORT_DYLIB_PATH</code> to the installed library file before
+loading churon. Restart R before switching an already loaded runtime.</p>
     </div>
+
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top"><h2 data-toc-skip>Contents</h2>
