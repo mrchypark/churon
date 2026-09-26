@@ -63,295 +63,206 @@
       </header><div class="row">
   <div class="contents col-md-9">
 <div class="section level1">
-<div class="page-header"><h1 id="churon-onnx-runtime-integration-for-r">churon: ONNX Runtime Integration for R<a class="anchor" aria-label="anchor" href="#churon-onnx-runtime-integration-for-r"></a>
+<div class="page-header"><h1 id="churon">churon<a class="anchor" aria-label="anchor" href="#churon"></a>
 </h1></div>
-<p><a href="https://github.com/churon-project/churon/actions" class="external-link"><img src="https://github.com/churon-project/churon/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a> <a href="https://opensource.org/licenses/MIT" class="external-link"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a></p>
-<p>churon provides R bindings for ONNX Runtime, enabling high-performance machine learning inference with ONNX models.</p>
+<p><a href="https://CRAN.R-project.org/package=churon" class="external-link"><img src="https://www.r-pkg.org/badges/version/churon" alt="CRAN version"></a> <a href="https://github.com/mrchypark/churon/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/mrchypark/churon/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD Check"></a> <a href="LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a></p>
+<p>Run ONNX models from R using <a href="https://onnxruntime.ai/" class="external-link">ONNX Runtime</a>. churon provides model sessions, named tensor inputs and outputs, and a bundled MNIST model through Rust bindings built with <a href="https://extendr.github.io/" class="external-link">extendr</a>.</p>
 <div class="section level2">
-<h2 id="features">Features<a class="anchor" aria-label="anchor" href="#features"></a>
+<h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
-<ul>
-<li>🚀 <strong>High Performance</strong>: Core logic implemented in Rust for speed</li>
-<li>🛡️ <strong>Memory Safety</strong>: Rust’s memory safety guarantees</li>
-<li>🔧 <strong>Comprehensive Error Handling</strong>: Detailed error messages and validation</li>
-<li>🌐 <strong>Multiple Execution Providers</strong>: CUDA, TensorRT, DirectML, OneDNN, CoreML, CPU support (on supported platforms)</li>
-<li>📦 <strong>Bundled Example Models</strong>: MNIST included for testing</li>
-</ul>
-</div>
-<div class="section level2">
-<h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
-</h2>
-<div class="section level3">
-<h3 id="system-requirements">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements"></a>
-</h3>
-<ul>
-<li>R (&gt;= 4.0.0)</li>
-<li>Supported platforms: macOS (ARM64), Linux (x64/ARM64), Windows (x64)</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="install-from-r-universe-recommended">Install from R-universe (Recommended)<a class="anchor" aria-label="anchor" href="#install-from-r-universe-recommended"></a>
-</h3>
-<p>Pre-built binaries are available from <a href="https://mrchypark.r-universe.dev/churon" class="external-link">R-universe</a>, which means <strong>no Rust toolchain required</strong>:</p>
+<p>Install the released package from <a href="https://CRAN.R-project.org/package=churon" class="external-link">CRAN</a>:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">'churon'</span>, repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">'https://mrchypark.r-universe.dev'</span>, <span class="st">'https://cloud.r-project.org'</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="install-from-github">Install from GitHub<a class="anchor" aria-label="anchor" href="#install-from-github"></a>
-</h3>
-<p>If you prefer to build from source (requires Rust &gt;= 1.88.0):</p>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"churon"</span><span class="op">)</span></span></code></pre></div>
+<p>R 4.0.0 or later is required. Installing a binary package does not require Rust. Building from source requires Cargo and rustc 1.88.0 or later, along with the platform’s R compilation tools. Rust dependencies are vendored in the CRAN source package for offline compilation.</p>
+<p>For alternative builds, use <a href="https://mrchypark.r-universe.dev/churon" class="external-link">R-universe</a>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"mrchypark/churon"</span><span class="op">)</span></span></code></pre></div>
-</div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="st">"churon"</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://mrchypark.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="quick-start">Quick Start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
+<h2 id="set-up-onnx-runtime">Set up ONNX Runtime<a class="anchor" aria-label="anchor" href="#set-up-onnx-runtime"></a>
 </h2>
-<div class="section level3">
-<h3 id="basic-usage">Basic Usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
-</h3>
+<p>ONNX Runtime is a separate native library. The R package can load without it, but inference requires it. Nothing is downloaded automatically.</p>
+<p>For a first run, install the runtime into a temporary directory:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># Download ONNX Runtime once after installing churon</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="reference/onnx_runtime_is_installed.html">onnx_runtime_is_installed</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="reference/install_onnx_runtime.html">install_onnx_runtime</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># Check available example models</span></span>
-<span><span class="va">models</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_example_models.html">onnx_example_models</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">models</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Create a session with the example MNIST model</span></span>
-<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_example_session.html">onnx_example_session</a></span><span class="op">(</span><span class="st">"mnist"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Get model information</span></span>
-<span><span class="va">input_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_input_info.html">onnx_input_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span><span class="va">output_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_output_info.html">onnx_output_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>     <span class="co"># Input tensor name</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_shape</span><span class="op">(</span><span class="op">)</span><span class="op">)</span>    <span class="co"># Input tensor shape</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_data_type</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="co"># Input tensor data type</span></span>
-<span></span>
-<span><span class="co"># Run inference</span></span>
-<span><span class="va">input_name</span> <span class="op">&lt;-</span> <span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">input_shape</span> <span class="op">&lt;-</span> <span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_shape</span><span class="op">(</span><span class="op">)</span>  <span class="co"># c(1, 1, 28, 28) for MNIST</span></span>
-<span></span>
-<span><span class="co"># Create random input (28x28 grayscale image)</span></span>
-<span><span class="va">input_data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/prod.html" class="external-link">prod</a></span><span class="op">(</span><span class="va">input_shape</span><span class="op">)</span><span class="op">)</span>, dim <span class="op">=</span> <span class="va">input_shape</span><span class="op">)</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_run.html">onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">input_data</span><span class="op">)</span>, <span class="va">input_name</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Result is class probabilities</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Predicted digit:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">result</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1</span>, <span class="st">"\n"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="using-custom-onnx-models">Using Custom ONNX Models<a class="anchor" aria-label="anchor" href="#using-custom-onnx-models"></a>
-</h3>
+<span><span class="fu"><a href="reference/install_onnx_runtime.html">install_onnx_runtime</a></span><span class="op">(</span>destdir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir</a></span><span class="op">(</span><span class="op">)</span>, <span class="st">"onnxruntime"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/check_onnx_runtime_available.html">check_onnx_runtime_available</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="co"># TRUE</span></span></code></pre></div>
+<p>The installer requires an explicit destination, verifies the download’s SHA-256 checksum, and sets <code>ORT_DYLIB_PATH</code> for the current R session. It supports runtime versions 1.28.0 and 1.29.0; the default is 1.29.0.</p>
+<p>To keep the runtime between sessions, choose a persistent directory instead of <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>. After installation, inspect the library’s full path:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Load any ONNX model</span></span>
-<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_session.html">onnx_session</a></span><span class="op">(</span><span class="st">"path/to/your/model.onnx"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Get expected input/output information</span></span>
-<span><span class="va">input_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_input_info.html">onnx_input_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span><span class="va">output_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_output_info.html">onnx_output_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Run inference with your data</span></span>
-<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="va">inputs</span><span class="op">[[</span><span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span><span class="op">]</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="va">your_data</span></span>
-<span><span class="va">outputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_run.html">onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="va">inputs</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="session-management">Session Management<a class="anchor" aria-label="anchor" href="#session-management"></a>
-</h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Create session with default providers</span></span>
-<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_session.html">onnx_session</a></span><span class="op">(</span><span class="st">"model.onnx"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Get available providers (note: may return limited set on current platform)</span></span>
-<span><span class="va">providers</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_providers.html">onnx_providers</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Available providers:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste</a></span><span class="op">(</span><span class="va">providers</span>, collapse <span class="op">=</span> <span class="st">", "</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Get model path</span></span>
-<span><span class="va">model_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_model_path.html">onnx_model_path</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="safe-session-creation-with-error-handling">Safe Session Creation with Error Handling<a class="anchor" aria-label="anchor" href="#safe-session-creation-with-error-handling"></a>
-</h3>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Safe session creation with automatic error handling</span></span>
-<span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/safe_onnx_session.html">safe_onnx_session</a></span><span class="op">(</span><span class="st">"model.onnx"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/NULL.html" class="external-link">is.null</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># Session created successfully</span></span>
-<span>  <span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_run.html">onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="va">inputs</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Failed to create session\n"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span></span>
-<span><span class="co"># Safe inference with monitoring</span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/safe_onnx_run.html">safe_onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="va">inputs</span>, monitor_performance <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
-</div>
-</div>
-<div class="section level2">
-<h2 id="api-reference">API Reference<a class="anchor" aria-label="anchor" href="#api-reference"></a>
-</h2>
-<div class="section level3">
-<h3 id="core-functions">Core Functions<a class="anchor" aria-label="anchor" href="#core-functions"></a>
-</h3>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/get_onnx_runtime_info.html">get_onnx_runtime_info</a></span><span class="op">(</span><span class="op">)</span><span class="op">$</span><span class="va">dylib_path</span></span></code></pre></div>
+<p>In each new R session, set that path <strong>before</strong> loading churon. You can also set <code>ORT_DYLIB_PATH</code> in your <code>.Renviron</code> file. It must point to the library file, not its directory:</p>
 <table class="table">
-<colgroup>
-<col width="43%">
-<col width="56%">
-</colgroup>
 <thead><tr>
-<th>Function</th>
-<th>Description</th>
+<th>Platform</th>
+<th>Library under your installation directory</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>onnx_session(model_path, providers = NULL)</code></td>
-<td>Create an ONNX Runtime session</td>
+<td>macOS ARM64</td>
+<td><code>lib/libonnxruntime.dylib</code></td>
+</tr>
+<tr>
+<td>Linux x64 / ARM64</td>
+<td><code>lib/libonnxruntime.so</code></td>
+</tr>
+<tr>
+<td>Windows x64 / ARM64</td>
+<td><code>lib/onnxruntime.dll</code></td>
+</tr>
+</tbody>
+</table>
+<p>An existing compatible ONNX Runtime installation can be used the same way, without running the installer. Restart R before switching a runtime that has already been loaded. The installer does not support Intel macOS.</p>
+</div>
+<div class="section level2">
+<h2 id="run-the-bundled-mnist-model">Run the bundled MNIST model<a class="anchor" aria-label="anchor" href="#run-the-bundled-mnist-model"></a>
+</h2>
+<p>Once the runtime is configured, this example runs without any model downloads:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_example_session.html">onnx_example_session</a></span><span class="op">(</span><span class="st">"mnist"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># MNIST expects one grayscale image: batch x channel x height x width.</span></span>
+<span><span class="co"># A blank image demonstrates the API; it is not a useful recognition example.</span></span>
+<span><span class="va">image</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/array.html" class="external-link">array</a></span><span class="op">(</span><span class="fl">0</span>, dim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">28</span>, <span class="fl">28</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">input_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_input_info.html">onnx_input_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">image</span><span class="op">)</span>, <span class="va">input_name</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">outputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_run.html">onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="va">inputs</span><span class="op">)</span></span>
+<span><span class="va">scores</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric</a></span><span class="op">(</span><span class="va">outputs</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">)</span></span>
+<span><span class="va">predicted_digit</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">scores</span><span class="op">)</span> <span class="op">-</span> <span class="fl">1L</span></span>
+<span><span class="va">predicted_digit</span></span></code></pre></div>
+<p>Inputs are a named list of numeric vectors, matrices, or arrays. Names must match the model’s input names. Outputs are a named list of tensors; their meaning depends on the model. The MNIST outputs are scores for digits 0–9, not automatically normalized probabilities.</p>
+<p>For real images, use the preprocessing and tensor layout expected by your model. churon does not resize, normalize, or otherwise preprocess images.</p>
+</div>
+<div class="section level2">
+<h2 id="use-your-own-model">Use your own model<a class="anchor" aria-label="anchor" href="#use-your-own-model"></a>
+</h2>
+<p>Replace the path and supply <code>input_data</code> with the dimensions and preprocessing required by your model:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_session.html">onnx_session</a></span><span class="op">(</span><span class="st">"path/to/model.onnx"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">input_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_input_info.html">onnx_input_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
+<span><span class="va">output_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_output_info.html">onnx_output_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">input_info</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">output_info</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># For a single-input model, after preparing input_data:</span></span>
+<span><span class="va">inputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/setNames.html" class="external-link">setNames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="va">input_data</span><span class="op">)</span>, <span class="va">input_info</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span><span class="op">$</span><span class="fu">get_name</span><span class="op">(</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">outputs</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/onnx_run.html">onnx_run</a></span><span class="op">(</span><span class="va">session</span>, <span class="va">inputs</span><span class="op">)</span></span></code></pre></div>
+<p>For models with multiple inputs, provide one named list entry per input. Use the model’s specification for tensor dimensions: the current metadata implementation returns <code>-1</code> as a shape placeholder, so do not construct arrays from <code>$get_shape()</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="api-at-a-glance">API at a glance<a class="anchor" aria-label="anchor" href="#api-at-a-glance"></a>
+</h2>
+<table class="table">
+<colgroup>
+<col width="50%">
+<col width="50%">
+</colgroup>
+<thead><tr>
+<th>Function</th>
+<th>Purpose</th>
+</tr></thead>
+<tbody>
+<tr>
+<td><code>onnx_session(model_path)</code></td>
+<td>Load a model into a session</td>
 </tr>
 <tr>
 <td><code>onnx_run(session, inputs)</code></td>
-<td>Run inference with input data</td>
+<td>Run inference and return named output tensors</td>
 </tr>
 <tr>
-<td><code>onnx_input_info(session)</code></td>
-<td>Get input tensor information</td>
+<td>
+<code>onnx_input_info(session)</code> / <code>onnx_output_info(session)</code>
+</td>
+<td>Inspect tensor metadata</td>
 </tr>
 <tr>
-<td><code>onnx_output_info(session)</code></td>
-<td>Get output tensor information</td>
+<td><code>onnx_model_path(session)</code></td>
+<td>Get the session’s model path</td>
 </tr>
 <tr>
 <td><code>onnx_providers(session)</code></td>
-<td>Get available execution providers</td>
+<td>Get the session’s reported execution providers</td>
 </tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="example-models">Example Models<a class="anchor" aria-label="anchor" href="#example-models"></a>
-</h3>
-<table class="table">
-<colgroup>
-<col width="43%">
-<col width="56%">
-</colgroup>
-<thead><tr>
-<th>Function</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
 <tr>
 <td><code><a href="reference/onnx_example_models.html">onnx_example_models()</a></code></td>
-<td>List bundled example models</td>
+<td>List bundled model paths</td>
 </tr>
 <tr>
-<td><code>onnx_example_session(model_name)</code></td>
-<td>Create session with example model</td>
-</tr>
-</tbody>
-</table>
-</div>
-<div class="section level3">
-<h3 id="utility-functions">Utility Functions<a class="anchor" aria-label="anchor" href="#utility-functions"></a>
-</h3>
-<table class="table">
-<colgroup>
-<col width="43%">
-<col width="56%">
-</colgroup>
-<thead><tr>
-<th>Function</th>
-<th>Description</th>
-</tr></thead>
-<tbody>
-<tr>
-<td><code>install_onnx_runtime(version)</code></td>
-<td>Download and install ONNX Runtime</td>
+<td><code>onnx_example_session("mnist")</code></td>
+<td>Load the bundled MNIST model</td>
 </tr>
 <tr>
-<td><code>find_model_path(model_name)</code></td>
-<td>Find full path to a model file</td>
+<td><code>install_onnx_runtime(destdir = ...)</code></td>
+<td>Explicitly download and install the runtime</td>
 </tr>
 <tr>
-<td><code><a href="reference/get_onnx_runtime_info.html">get_onnx_runtime_info()</a></code></td>
-<td>Get ONNX Runtime version info</td>
+<td><code><a href="reference/onnx_runtime_is_installed.html">onnx_runtime_is_installed()</a></code></td>
+<td>Check whether a runtime library file can be found</td>
 </tr>
 <tr>
 <td><code><a href="reference/check_onnx_runtime_available.html">check_onnx_runtime_available()</a></code></td>
-<td>Check if ONNX Runtime is available</td>
+<td>Check whether the configured runtime path exists</td>
 </tr>
 <tr>
-<td><code><a href="reference/safe_onnx_session.html">safe_onnx_session()</a></code></td>
-<td>Create session with error handling</td>
+<td><code><a href="reference/get_onnx_runtime_info.html">get_onnx_runtime_info()</a></code></td>
+<td>Inspect runtime paths, platform, and configuration</td>
 </tr>
 <tr>
-<td><code><a href="reference/safe_onnx_run.html">safe_onnx_run()</a></code></td>
-<td>Run inference with error handling</td>
+<td>
+<code><a href="reference/safe_onnx_session.html">safe_onnx_session()</a></code> / <code><a href="reference/safe_onnx_run.html">safe_onnx_run()</a></code>
+</td>
+<td>Warn and return <code>NULL</code> on failure</td>
+</tr>
+<tr>
+<td><code>batch_process_data(session, data_list)</code></td>
+<td>Process a list of input sets in batches</td>
 </tr>
 </tbody>
 </table>
-</div>
-</div>
-<div class="section level2">
-<h2 id="current-status">Current Status<a class="anchor" aria-label="anchor" href="#current-status"></a>
-</h2>
-<div class="section level3">
-<h3 id="white_check_mark-fully-working-features">✅ Fully Working Features<a class="anchor" aria-label="anchor" href="#white_check_mark-fully-working-features"></a>
-</h3>
-<ul>
-<li>ONNX model loading and session management</li>
-<li>Model metadata extraction and querying</li>
-<li>Tensor conversion (f32, f64 support)</li>
-<li>Inference execution with multiple execution providers</li>
-<li>Comprehensive error handling and validation</li>
-<li>Bundled MNIST model for testing</li>
-</ul>
-</div>
-<div class="section level3">
-<h3 id="warning-limitations">⚠️ Limitations<a class="anchor" aria-label="anchor" href="#warning-limitations"></a>
-</h3>
-<ul>
-<li>
-<strong>Platform Support</strong>: Currently optimized for macOS ARM64</li>
-<li>
-<strong>Execution Providers</strong>: Some providers (CUDA, TensorRT) require additional system libraries</li>
-<li>
-<strong>Performance Features</strong>: Advanced optimization features pending implementation</li>
-</ul>
-</div>
+<p>See <code><a href="reference/onnx_session.html">?onnx_session</a></code>, <code><a href="reference/onnx_run.html">?onnx_run</a></code>, and <code><a href="reference/install_onnx_runtime.html">?install_onnx_runtime</a></code> in R for details, or read the <a href="https://CRAN.R-project.org/web/packages/churon/churon.pdf" class="external-link">reference manual</a>.</p>
 </div>
 <div class="section level2">
-<h2 id="contributing">Contributing<a class="anchor" aria-label="anchor" href="#contributing"></a>
+<h2 id="current-limitations">Current limitations<a class="anchor" aria-label="anchor" href="#current-limitations"></a>
 </h2>
-<ol style="list-style-type: decimal">
-<li>Fork this repository</li>
-<li>Create a feature branch (<code>git checkout -b feature/amazing-feature</code>)</li>
-<li>Commit your changes (<code>git commit -m 'Add amazing feature'</code>)</li>
-<li>Push to the branch (<code>git push origin feature/amazing-feature</code>)</li>
-<li>Open a Pull Request</li>
-</ol>
+<ul>
+<li>
+<strong>CPU inference:</strong> the current R session API uses CPU execution. Its <code>providers</code> argument validates names but does not yet select a backend; passing <code>"cuda"</code> does not enable GPU inference.</li>
+<li>
+<strong>Tensor types:</strong> the public inference API accepts numeric inputs and converts them to float32. Do not assume support for integer, boolean, string, or float64 model inputs.</li>
+<li>
+<strong>Shape metadata:</strong> reported shapes are placeholders. Supply dimensions from your model’s specification.</li>
+<li>
+<strong>Runtime checks:</strong> path checks confirm that a file exists, not that it is a compatible library. Actual model loading can still fail.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="troubleshooting">Troubleshooting<a class="anchor" aria-label="anchor" href="#troubleshooting"></a>
+</h2>
+<p><strong>Runtime not found:</strong> inspect <code><a href="reference/get_onnx_runtime_info.html">get_onnx_runtime_info()</a></code>. Set <code>ORT_DYLIB_PATH</code> to the full library filename before loading churon, or run the installer with an explicit destination. Temporary installations disappear after the R session.</p>
+<p><strong>Model or input errors:</strong> check that the model file exists, input names match, and tensor types and dimensions agree with the model. <code><a href="reference/onnx_run.html">onnx_run()</a></code> reports errors; <code><a href="reference/safe_onnx_run.html">safe_onnx_run()</a></code> turns them into warnings and returns <code>NULL</code>.</p>
+</div>
+<div class="section level2">
+<h2 id="development-and-support">Development and support<a class="anchor" aria-label="anchor" href="#development-and-support"></a>
+</h2>
+<p>Report bugs or request features in <a href="https://github.com/mrchypark/churon/issues" class="external-link">GitHub issues</a>. Include your OS, R and churon versions, runtime configuration, and a minimal reproducible example. Pull requests are welcome.</p>
+<p>With the development dependencies and Rust toolchain installed, run from a checkout:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">load_all</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">test</span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p>Tests requiring ONNX Runtime are skipped when it is unavailable.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
-<p>This project is licensed under the MIT License. See the <a href="LICENSE">LICENSE</a> file for details.</p>
-</div>
-<div class="section level2">
-<h2 id="acknowledgments">Acknowledgments<a class="anchor" aria-label="anchor" href="#acknowledgments"></a>
-</h2>
-<ul>
-<li>
-<a href="https://onnxruntime.ai/" class="external-link">ONNX Runtime</a> team</li>
-<li>
-<a href="https://github.com/extendr/extendr" class="external-link">extendr</a> project</li>
-<li>R community</li>
-</ul>
+<p>churon is licensed under <a href="LICENSE.html">MIT</a>. The bundled MNIST model and external ONNX Runtime library have their own licensing terms; see <a href="inst/COPYRIGHTS">third-party notices</a> and <a href="inst/AUTHORS">contributors</a>.</p>
 </div>
 </div>
   </div>
@@ -360,6 +271,7 @@
     <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
+<li><a href="https://cloud.r-project.org/package=churon" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/mrchypark/churon/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/mrchypark/churon/issues" class="external-link">Report a bug</a></li>
 </ul>
