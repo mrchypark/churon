@@ -11,6 +11,12 @@
 
 \item{name}{Property name to access}
 }
+\value{
+For \code{name} and \code{data_type}, a character scalar identifying the tensor
+or its element type. For \code{shape}, an integer vector of tensor dimensions
+(negative dimensions indicate dynamic sizes). For a method name, a function
+bound to the object; for an unknown name, \code{NULL}.
+}
 \description{
 These methods provide convenient access to object properties.
 }

@@ -16,9 +16,9 @@ Character string with the model path
 Get the model path from a session.
 }
 \examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-model_path <- onnx_model_path(session)
-cat("Model path:", model_path, "\n")
+if (check_onnx_runtime_available()) {
+  session <- onnx_example_session()
+  model_path <- onnx_model_path(session)
+  cat("Model path:", model_path, "\n")
 }
 }

@@ -20,11 +20,11 @@ An RSession object for running inference
 Create a new ONNX Runtime session from a model file.
 }
 \examples{
-\dontrun{
-# Create session with default providers
-session <- onnx_session("path/to/model.onnx")
+if (check_onnx_runtime_available()) {
+  # Create session with default providers
+  session <- onnx_example_session()
 
-# Create session with specific providers
-session <- onnx_session("path/to/model.onnx", providers = c("cuda", "cpu"))
+  # Create session with specific providers
+  session <- onnx_example_session(providers = "cpu")
 }
 }

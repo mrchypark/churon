@@ -467,7 +467,7 @@ impl RSession {
                 path
             } else {
                 // Try to find the library in the package installation directory
-                // This is the default location used by install_onnx_runtime()
+                // Compatibility fallback for existing package-local installations
                 let pkg_path = std::env::var("R_PACKAGE_DIR")
                     .ok()
                     .or_else(|| std::env::var("R_LIBS_USER").ok())
@@ -485,7 +485,7 @@ impl RSession {
                 } else {
                     // Library not found - return error instead of panicking
                     return Err(extendr_api::Error::EvalError(
-                    "ONNX Runtime library not found. Please run install_onnx_runtime() to download it.".into(),
+                    "ONNX Runtime library not found. Please call install_onnx_runtime() with an explicit destdir to download it.".into(),
                 ));
                 }
             };

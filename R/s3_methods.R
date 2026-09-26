@@ -4,6 +4,10 @@
 #'
 #' @param x A TensorInfo or RSession object
 #' @param name Property name to access
+#' @return For `name` and `data_type`, a character scalar identifying the tensor
+#'   or its element type. For `shape`, an integer vector of tensor dimensions
+#'   (negative dimensions indicate dynamic sizes). For a method name, a function
+#'   bound to the object; for an unknown name, `NULL`.
 #' @export
 `$.TensorInfo` <- function(x, name) {
   if (name == "name") {

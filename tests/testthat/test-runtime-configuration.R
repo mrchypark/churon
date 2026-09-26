@@ -32,6 +32,8 @@ test_that("a valid configured ONNX Runtime path is preserved", {
   Sys.setenv(ORT_DYLIB_PATH = runtime)
   expect_true(churon:::setup_onnx_runtime())
   expect_equal(Sys.getenv("ORT_DYLIB_PATH"), normalizePath(runtime))
+  expect_identical(churon:::onnx_runtime_lib_path(), normalizePath(runtime))
+  expect_true(onnx_runtime_is_installed())
 })
 
 test_that("a missing configured ONNX Runtime path falls back gracefully", {
@@ -62,11 +64,11 @@ test_that("a missing configured ONNX Runtime path falls back gracefully", {
 
 test_that("runtime installer enforces verified compatible versions", {
   expect_error(
-    install_onnx_runtime(NA_character_, quiet = TRUE),
+    install_onnx_runtime(NA_character_, quiet = TRUE, destdir = tempdir()),
     "version must be one non-missing character string"
   )
   expect_error(
-    install_onnx_runtime("1.27.0", quiet = TRUE),
+    install_onnx_runtime("1.27.0", quiet = TRUE, destdir = tempdir()),
     "supports ONNX Runtime versions 1.28.0 and 1.29.0"
   )
   expect_identical(
@@ -76,4 +78,23 @@ test_that("runtime installer enforces verified compatible versions", {
     ),
     "c3fddc4f139a045b0c4902c57410f0694f1c2fdf9b6939fbe38b1aeae7cd14ba"
   )
+})
+
+
+test_that("runtime installation requires an explicit valid destination", {
+  expect_error(install_onnx_runtime(), "destdir must be supplied")
+  for (destdir in list(
+    NULL,
+    NA_character_,
+    "",
+    "  ",
+    character(),
+    c("a", "b"),
+    1
+  )) {
+    expect_error(
+      install_onnx_runtime(destdir = destdir),
+      "destdir must be supplied"
+    )
+  }
 })

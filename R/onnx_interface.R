@@ -23,12 +23,12 @@ NULL
 #' @return An RSession object for running inference
 #' @export
 #' @examples
-#' \dontrun{
-#' # Create session with default providers
-#' session <- onnx_session("path/to/model.onnx")
+#' if (check_onnx_runtime_available()) {
+#'   # Create session with default providers
+#'   session <- onnx_example_session()
 #'
-#' # Create session with specific providers
-#' session <- onnx_session("path/to/model.onnx", providers = c("cuda", "cpu"))
+#'   # Create session with specific providers
+#'   session <- onnx_example_session(providers = "cpu")
 #' }
 onnx_session <- function(model_path, providers = NULL) {
   # Input validation
@@ -131,10 +131,10 @@ onnx_session <- function(model_path, providers = NULL) {
 #' @return A named list of output tensors
 #' @export
 #' @examples
-#' \dontrun{
-#' session <- onnx_session("path/to/model.onnx")
-#' inputs <- list(input_tensor = matrix(rnorm(10), nrow = 2, ncol = 5))
-#' outputs <- onnx_run(session, inputs)
+#' if (check_onnx_runtime_available()) {
+#'   session <- onnx_example_session()
+#'   inputs <- list(Input3 = array(0, dim = c(1, 1, 28, 28)))
+#'   outputs <- onnx_run(session, inputs)
 #' }
 onnx_run <- function(session, inputs) {
   .validate_session(session)
@@ -261,10 +261,10 @@ onnx_run <- function(session, inputs) {
 #' @return A list of TensorInfo objects containing input tensor metadata
 #' @export
 #' @examples
-#' \dontrun{
-#' session <- onnx_session("path/to/model.onnx")
-#' input_info <- onnx_input_info(session)
-#' print(input_info)
+#' if (check_onnx_runtime_available()) {
+#'   session <- onnx_example_session()
+#'   input_info <- onnx_input_info(session)
+#'   print(input_info)
 #' }
 onnx_input_info <- function(session) {
   .validate_session(session)
@@ -294,10 +294,10 @@ onnx_input_info <- function(session) {
 #' @return A list of TensorInfo objects containing output tensor metadata
 #' @export
 #' @examples
-#' \dontrun{
-#' session <- onnx_session("path/to/model.onnx")
-#' output_info <- onnx_output_info(session)
-#' print(output_info)
+#' if (check_onnx_runtime_available()) {
+#'   session <- onnx_example_session()
+#'   output_info <- onnx_output_info(session)
+#'   print(output_info)
 #' }
 onnx_output_info <- function(session) {
   .validate_session(session)
@@ -327,10 +327,10 @@ onnx_output_info <- function(session) {
 #' @return A character vector of available execution providers
 #' @export
 #' @examples
-#' \dontrun{
-#' session <- onnx_session("path/to/model.onnx")
-#' providers <- onnx_providers(session)
-#' cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
+#' if (check_onnx_runtime_available()) {
+#'   session <- onnx_example_session()
+#'   providers <- onnx_providers(session)
+#'   cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
 #' }
 onnx_providers <- function(session) {
   .validate_session(session)
@@ -360,10 +360,10 @@ onnx_providers <- function(session) {
 #' @return Character string with the model path
 #' @export
 #' @examples
-#' \dontrun{
-#' session <- onnx_session("path/to/model.onnx")
-#' model_path <- onnx_model_path(session)
-#' cat("Model path:", model_path, "\n")
+#' if (check_onnx_runtime_available()) {
+#'   session <- onnx_example_session()
+#'   model_path <- onnx_model_path(session)
+#'   cat("Model path:", model_path, "\n")
 #' }
 onnx_model_path <- function(session) {
   .validate_session(session)

@@ -3,7 +3,9 @@ test_that("end-to-end workflow with example models", {
 
   # Check if ONNX Runtime is actually available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   # Get available example models
@@ -43,7 +45,9 @@ test_that("convenience functions work correctly", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   models <- onnx_example_models()
@@ -67,7 +71,9 @@ test_that("error handling in real scenarios", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   # Test with non-existent model
@@ -104,7 +110,9 @@ test_that("input validation works correctly", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   models <- onnx_example_models()

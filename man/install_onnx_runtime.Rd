@@ -4,7 +4,7 @@
 \alias{install_onnx_runtime}
 \title{Install ONNX Runtime}
 \usage{
-install_onnx_runtime(version = "1.29.0", quiet = FALSE, ...)
+install_onnx_runtime(version = "1.29.0", quiet = FALSE, destdir, ...)
 }
 \arguments{
 \item{version}{Character string specifying the ONNX Runtime version to install.
@@ -12,6 +12,8 @@ Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
 "latest" selects "1.29.0".}
 
 \item{quiet}{Logical. If TRUE, suppress download progress messages.}
+
+\item{destdir}{Required character string naming the installation directory.}
 
 \item{...}{Additional arguments passed to download.file()}
 }
@@ -23,15 +25,10 @@ Download and install ONNX Runtime library for your platform.
 This is required before using the churon package if ONNX Runtime
 is not already installed on your system.
 }
-\examples{
-\dontrun{
-# Install ONNX Runtime
-install_onnx_runtime()
-
-# Install specific version
-install_onnx_runtime(version = "1.28.0")
-
-# Install with no output
-install_onnx_runtime(quiet = TRUE)
-}
+\details{
+This function installs external software only when explicitly called. Supply
+\code{destdir} yourself; no installation directory is selected by default.
+The library is placed in \code{destdir/lib} and configured for this R session.
+In later sessions, set \code{ORT_DYLIB_PATH} to the installed library file before
+loading churon. Restart R before switching an already loaded runtime.
 }

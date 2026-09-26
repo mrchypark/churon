@@ -16,9 +16,9 @@ A list of TensorInfo objects containing input tensor metadata
 Retrieve information about model input tensors.
 }
 \examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-input_info <- onnx_input_info(session)
-print(input_info)
+if (check_onnx_runtime_available()) {
+  session <- onnx_example_session()
+  input_info <- onnx_input_info(session)
+  print(input_info)
 }
 }

@@ -1,6 +1,6 @@
 Package: churon
-Title: 'ONNX' Runtime Integration for R
-Version: 0.1.11
+Title: 'ONNX Runtime' Integration
+Version: 0.1.12
 Authors@R: c(
     person(given = "Chanyub", family = "Park", role = c("aut", "cre"),
            email = "mrchypark@gmail.com",
@@ -12,13 +12,14 @@ Authors@R: c(
     person(given = "Microsoft Corporation", role = "cph",
            comment = "ONNX Runtime, downloaded only on explicit user request")
     )
-Description: Provides high-performance R bindings for 'ONNX' Runtime, enabling
-    efficient machine learning model inference. Written in Rust for memory safety
+Description: Provides high-performance R bindings for 'ONNX Runtime'
+    <https://onnxruntime.ai/>, enabling efficient machine learning model inference. Written in 'Rust' for memory safety
     and speed, the package supports cross-platform model execution with multiple
     execution providers. Includes comprehensive error handling and validation,
-    with bundled 'MNIST' example model for immediate testing and prototyping.
+    with bundled MNIST example model for immediate testing and prototyping.
     Designed for production use with support for macOS (arm64), Linux (x64/arm64),
-    and Windows (x64).
+    and Windows (x64). Runtime libraries are downloaded on explicit request from
+    <https://github.com/microsoft/onnxruntime/releases>.
 License: MIT + file LICENSE
 URL: https://github.com/mrchypark/churon
 BugReports: https://github.com/mrchypark/churon/issues

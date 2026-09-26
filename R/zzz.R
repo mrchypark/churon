@@ -14,7 +14,9 @@
   if (!check_onnx_runtime_available()) {
     packageStartupMessage("")
     packageStartupMessage("ONNX Runtime is not installed.")
-    packageStartupMessage("To install, run: install_onnx_runtime()")
+    packageStartupMessage(
+      "To install, call install_onnx_runtime() with an explicit destdir."
+    )
     packageStartupMessage("")
   } else {
     packageStartupMessage("ONNX Runtime loaded successfully.")
