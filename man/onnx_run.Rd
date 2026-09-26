@@ -18,9 +18,9 @@ A named list of output tensors
 Execute inference on an ONNX model with input data.
 }
 \examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-inputs <- list(input_tensor = matrix(rnorm(10), nrow = 2, ncol = 5))
-outputs <- onnx_run(session, inputs)
+if (check_onnx_runtime_available()) {
+  session <- onnx_example_session()
+  inputs <- list(Input3 = array(0, dim = c(1, 1, 28, 28)))
+  outputs <- onnx_run(session, inputs)
 }
 }

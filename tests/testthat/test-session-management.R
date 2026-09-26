@@ -3,7 +3,9 @@ test_that("session creation with valid model", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   models <- onnx_example_models()
@@ -23,7 +25,9 @@ test_that("session creation with execution providers", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   models <- onnx_example_models()
@@ -46,7 +50,9 @@ test_that("session information retrieval", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   models <- onnx_example_models()

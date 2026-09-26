@@ -1,18 +1,37 @@
-## Test environments
+## Resubmission (0.1.12)
 
-* GitHub Actions: R-devel, R-release, and R 4.0 on Ubuntu (without ONNX
-  Runtime and without network access during package installation)
-* GitHub Actions: R-release on Ubuntu x86_64 and arm64, macOS, and Windows
-* r-universe: R-devel, R-release, and R-oldrel native builders, plus WebAssembly
+This resubmission addresses the CRAN review of version 0.1.11:
 
-## R CMD check results
+* Removed the redundant "for R" from the title and quoted software names
+  consistently; MNIST is no longer quoted.
+* Added ONNX Runtime and GitHub release URLs to DESCRIPTION.
+* Documented the return types and meaning of `$.TensorInfo` results.
+* Replaced non-running placeholder examples with executable examples using
+  the bundled MNIST model, conditional on runtime availability.
+* Removed software installation calls from the installer examples.
+* Required an explicit `destdir` for runtime installation. The installer no
+  longer writes into the package library, and configures `ORT_DYLIB_PATH`
+  for the current session. Later-session configuration is documented.
+* Removed automatic R package installation from the development setup script.
 
-0 errors | 0 warnings | 0 notes
+## Local validation (2026-09-11)
+
+* macOS arm64, R 4.5.2, Rust 1.97.1.
+* Runtime-enabled tests: 90 passed, no failures, warnings, or skips.
+* Offline `R CMD check --as-cran --no-manual`: 0 errors, 0 warnings, 1 note.
+  The note reports that current time could not be verified with network access
+  disabled. The official Debian `checkbashisms` utility was supplied for this check.
+  Package installation, documentation, examples, and tests passed.
 
 ## Additional notes
 
-This is a new submission.
+Rust dependencies are vendored in the source package for offline builds.
+ONNX Runtime is not bundled. The dedicated installer downloads it only on
+explicit request with a user-supplied destination. Tests requiring a runtime
+are skipped when it is absent; tests do not download or install software.
 
-Rust dependencies are vendored in the source package for offline builds. ONNX
-Runtime is not bundled; users may download it explicitly with
-`install_onnx_runtime()`. Tests that require it are skipped when it is absent.
+## Submission status
+
+Version 0.1.12 was uploaded and submitted through the CRAN web form on
+2026-09-11 (upload ID 354755). The maintainer subsequently confirmed publication on CRAN.
+The Git repository is being synchronized with the published 0.1.12 release.

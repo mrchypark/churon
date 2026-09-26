@@ -3,7 +3,9 @@ test_that("basic inference execution", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   expect_true(TRUE)
@@ -14,7 +16,9 @@ test_that("inference with invalid input data", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   model_dir <- system.file("model", package = "churon")

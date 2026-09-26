@@ -16,9 +16,9 @@ A character vector of available execution providers
 Get the execution providers available for the session.
 }
 \examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-providers <- onnx_providers(session)
-cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
+if (check_onnx_runtime_available()) {
+  session <- onnx_example_session()
+  providers <- onnx_providers(session)
+  cat("Available execution providers:", paste(providers, collapse = ", "), "\n")
 }
 }

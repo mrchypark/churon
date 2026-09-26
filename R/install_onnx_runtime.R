@@ -7,26 +7,38 @@
 #' @param version Character string specifying the ONNX Runtime version to install.
 #'   Defaults to "1.29.0". Supported versions are "1.28.0" and "1.29.0";
 #'   "latest" selects "1.29.0".
+#' @param destdir Required character string naming the installation directory.
 #' @param quiet Logical. If TRUE, suppress download progress messages.
 #' @param ... Additional arguments passed to download.file()
 #'
 #' @return Invisible TRUE on success, stops with error on failure.
 #' @export
-#' @examples
-#' \dontrun{
-#' # Install ONNX Runtime
-#' install_onnx_runtime()
-#'
-#' # Install specific version
-#' install_onnx_runtime(version = "1.28.0")
-#'
-#' # Install with no output
-#' install_onnx_runtime(quiet = TRUE)
-#' }
-install_onnx_runtime <- function(version = "1.29.0", quiet = FALSE, ...) {
+#' @details
+#' This function installs external software only when explicitly called. Supply
+#' `destdir` yourself; no installation directory is selected by default.
+#' The library is placed in `destdir/lib` and configured for this R session.
+#' In later sessions, set `ORT_DYLIB_PATH` to the installed library file before
+#' loading churon. Restart R before switching an already loaded runtime.
+install_onnx_runtime <- function(
+  version = "1.29.0",
+  quiet = FALSE,
+  destdir,
+  ...
+) {
   if (!is.character(version) || length(version) != 1L || is.na(version)) {
     stop("version must be one non-missing character string.")
   }
+
+  if (
+    missing(destdir) ||
+      !is.character(destdir) ||
+      length(destdir) != 1L ||
+      is.na(destdir) ||
+      !nzchar(trimws(destdir))
+  ) {
+    stop("destdir must be supplied as one non-empty directory path.")
+  }
+  destdir <- path.expand(destdir)
 
   # Platform detection
   platform <- Sys.info()[["sysname"]]
@@ -149,7 +161,7 @@ install_onnx_runtime <- function(version = "1.29.0", quiet = FALSE, ...) {
       }
 
       # Determine library path
-      lib_dir <- file.path(.libPaths()[1], "churon", "onnxruntime", "lib")
+      lib_dir <- file.path(destdir, "lib")
 
       # Create directory if needed
       if (!dir.exists(lib_dir)) {
@@ -186,7 +198,7 @@ install_onnx_runtime <- function(version = "1.29.0", quiet = FALSE, ...) {
         )
         if (!copied) {
           stop(
-            "Failed to copy the ONNX Runtime library into the package library."
+            "Failed to copy the ONNX Runtime library into destdir."
           )
         }
 
@@ -206,34 +218,17 @@ install_onnx_runtime <- function(version = "1.29.0", quiet = FALSE, ...) {
         stop("Could not find ", lib_filename, " in extracted archive")
       }
 
-      # Copy include directory (for future use)
-      include_dir <- file.path(
-        .libPaths()[1],
-        "churon",
-        "onnxruntime",
-        "include"
-      )
-      if (!dir.exists(include_dir)) {
-        dir.create(include_dir, showWarnings = FALSE, recursive = TRUE)
-      }
-      include_src_dir <- file.path(extracted_dir, "include")
-      if (dir.exists(include_src_dir)) {
-        file.copy(
-          list.files(include_src_dir, full.names = TRUE, recursive = TRUE),
-          include_dir,
-          overwrite = TRUE,
-          recursive = TRUE
-        )
-      }
-
       # Clean up
       unlink(temp_dir, recursive = TRUE)
 
       # Verify installation
-      lib_file <- onnx_runtime_lib_path()
+      lib_file <- file.path(lib_dir, lib_filename)
       if (!file.exists(lib_file)) {
         stop("Installation verification failed: library file not found")
       }
+
+      Sys.setenv(ORT_DYLIB_PATH = normalizePath(lib_file))
+      setup_onnx_runtime()
 
       if (!quiet) {
         message(sprintf("ONNX Runtime installed successfully!"))
@@ -291,6 +286,10 @@ onnx_runtime_is_installed <- function() {
 #' @return Character string with the library path.
 #' @keywords internal
 onnx_runtime_lib_path <- function() {
+  configured_path <- Sys.getenv("ORT_DYLIB_PATH", unset = "")
+  if (nzchar(configured_path) && file.exists(configured_path)) {
+    return(configured_path)
+  }
   platform <- Sys.info()[["sysname"]]
   pkg_path <- system.file(package = "churon")
 

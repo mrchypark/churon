@@ -16,9 +16,9 @@ A list of TensorInfo objects containing output tensor metadata
 Retrieve information about model output tensors.
 }
 \examples{
-\dontrun{
-session <- onnx_session("path/to/model.onnx")
-output_info <- onnx_output_info(session)
-print(output_info)
+if (check_onnx_runtime_available()) {
+  session <- onnx_example_session()
+  output_info <- onnx_output_info(session)
+  print(output_info)
 }
 }

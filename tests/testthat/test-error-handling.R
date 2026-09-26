@@ -30,7 +30,9 @@ test_that("error handling for invalid execution providers", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   model_dir <- system.file("model", package = "churon")
@@ -63,7 +65,9 @@ test_that("error handling for inference failures", {
 
   # Check if ONNX Runtime is available
   if (!check_onnx_runtime_available()) {
-    skip("ONNX Runtime not installed - run install_onnx_runtime()")
+    skip(
+      "ONNX Runtime not installed - run install_onnx_runtime(destdir = tempdir())"
+    )
   }
 
   model_dir <- system.file("model", package = "churon")
