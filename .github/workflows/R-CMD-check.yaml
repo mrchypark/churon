@@ -110,8 +110,24 @@ jobs:
         run: tar -tf src/rust/vendor.tar.xz >/dev/null
 
       - uses: r-lib/actions/check-r-package@465b7d8e732ca3921382b1674c59bada9cbf3399
+        if: runner.os != 'macOS'
         with:
           error-on: '"warning"'
+
+      - name: Check macOS with Rust absent from PATH (CRAN configuration)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          set -euo pipefail
+          rust_free_path="$(printf '%s\n' "$PATH" | tr ':' '\n' | while IFS= read -r dir; do
+            if [ ! -x "$dir/cargo" ] && [ ! -x "$dir/rustc" ]; then printf '%s:' "$dir"; fi
+          done)"
+          export PATH="${rust_free_path%:}"
+          if command -v cargo || command -v rustc; then
+            echo "Rust must be absent from PATH for this regression check" >&2
+            exit 1
+          fi
+          Rscript -e 'rcmdcheck::rcmdcheck(args = c("--as-cran", "--no-manual"), error_on = "warning")'
 
   R-CMD-check-no-ort:
     name: ubuntu-latest (no ORT, R ${{ matrix.r }}, offline)

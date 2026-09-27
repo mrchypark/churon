@@ -16,9 +16,6 @@ CARGOTMP = $(CURDIR)/.cargo
 VENDOR_FLAGS = 
 
 $(STATLIB):
-	# Check rustc version
-	rustc --version
-	
 	# Vendor setup: extract vendored crates and configure cargo
 	if [ -f ./rust/vendor.tar.xz ]; then \
 		tar -xf ./rust/vendor.tar.xz -C $(CURDIR) && \
