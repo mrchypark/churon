@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">churon</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.9</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.13</span>
       </span>
     </div>
 
@@ -48,135 +48,9 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.4" id="churon-014">churon 0.1.4<a class="anchor" aria-label="anchor" href="#churon-014"></a></h2>
-<ul><li>PREPARE FOR CRAN SUBMISSION</li>
-<li>Added <code>creating-model-packages</code> vignette.</li>
-<li>Updated <code>cran-comments.md</code> with package size justification.</li>
-<li>Removed non-standard fields from <code>DESCRIPTION</code>.</li>
-<li>Cleaned up <code>.Rbuildignore</code>.</li>
+<h2 class="page-header" data-toc-text="0.1.13" id="churon-0113">churon 0.1.13<a class="anchor" aria-label="anchor" href="#churon-0113"></a></h2>
+<ul><li>Fix source installation when Rust is installed in <code>~/.cargo/bin</code> but is not on <code>PATH</code>, as on the CRAN macOS builders. Rust version requirements continue to be checked by <code>configure</code>.</li>
 </ul></div>
-    <div class="section level2">
-<h2 class="page-header" data-toc-text="0.1.3" id="churon-013">churon 0.1.3<a class="anchor" aria-label="anchor" href="#churon-013"></a></h2>
-<div class="section level3">
-<h3 id="new-features-0-1-3">New Features<a class="anchor" aria-label="anchor" href="#new-features-0-1-3"></a></h3>
-<div class="section level4">
-<h4 id="core-onnx-runtime-integration-0-1-3">Core ONNX Runtime Integration<a class="anchor" aria-label="anchor" href="#core-onnx-runtime-integration-0-1-3"></a></h4>
-<ul><li>
-<strong>ONNX Session Management</strong>: Complete implementation of RSession for model loading and management</li>
-<li>
-<strong>Multiple Execution Providers</strong>: Support for CPU, CUDA, TensorRT, DirectML, OneDNN, and CoreML</li>
-<li>
-<strong>High-Performance Inference</strong>: Rust-based implementation for optimal performance and memory safety</li>
-</ul></div>
-<div class="section level4">
-<h4 id="r-interface-functions-0-1-3">R Interface Functions<a class="anchor" aria-label="anchor" href="#r-interface-functions-0-1-3"></a></h4>
-<ul><li>
-<code><a href="../reference/onnx_session.html">onnx_session()</a></code>: Create ONNX Runtime sessions from model files</li>
-<li>
-<code><a href="../reference/onnx_run.html">onnx_run()</a></code>: Execute inference with comprehensive input validation</li>
-<li>
-<code><a href="../reference/onnx_input_info.html">onnx_input_info()</a></code> / <code><a href="../reference/onnx_output_info.html">onnx_output_info()</a></code>: Retrieve model tensor metadata</li>
-<li>
-<code><a href="../reference/onnx_providers.html">onnx_providers()</a></code>: Query available and active execution providers</li>
-<li>
-<code><a href="../reference/onnx_model_path.html">onnx_model_path()</a></code>: Get loaded model file path</li>
-</ul></div>
-<div class="section level4">
-<h4 id="example-model-support-0-1-3">Example Model Support<a class="anchor" aria-label="anchor" href="#example-model-support-0-1-3"></a></h4>
-<ul><li>
-<strong>Korean Text Processing</strong>: Built-in support for Korean spacing (kospacing) models</li>
-<li>
-<code><a href="../reference/onnx_example_models.html">onnx_example_models()</a></code>: List available example models in package</li>
-<li>
-<code><a href="../reference/find_model_path.html">find_model_path()</a></code>: Flexible model path resolution</li>
-<li>
-<code><a href="../reference/onnx_example_session.html">onnx_example_session()</a></code>: Quick session creation with example models</li>
-</ul></div>
-<div class="section level4">
-<h4 id="error-handling-and-validation-0-1-3">Error Handling and Validation<a class="anchor" aria-label="anchor" href="#error-handling-and-validation-0-1-3"></a></h4>
-<ul><li>
-<strong>Comprehensive Input Validation</strong>: Multi-layer validation at both Rust and R levels</li>
-<li>
-<strong>Detailed Error Messages</strong>: Context-aware error messages with solution suggestions</li>
-<li>
-<strong>Safe Function Variants</strong>: <code><a href="../reference/safe_onnx_session.html">safe_onnx_session()</a></code> and <code><a href="../reference/safe_onnx_run.html">safe_onnx_run()</a></code> with try/catch handling</li>
-<li>
-<code>check_onnx_runtime()</code>: Runtime environment availability checking</li>
-</ul></div>
-<div class="section level4">
-<h4 id="data-conversion-system-0-1-3">Data Conversion System<a class="anchor" aria-label="anchor" href="#data-conversion-system-0-1-3"></a></h4>
-<ul><li>
-<strong>Multi-Type Support</strong>: Conversion between R data types and ndarray (f32, f64, i32, i64)</li>
-<li>
-<strong>Shape Validation</strong>: Automatic tensor shape validation against model requirements</li>
-<li>
-<strong>Memory Efficient</strong>: Optimized data conversion with minimal copying</li>
-</ul></div>
-<div class="section level4">
-<h4 id="documentation-and-examples-0-1-3">Documentation and Examples<a class="anchor" aria-label="anchor" href="#documentation-and-examples-0-1-3"></a></h4>
-<ul><li>
-<strong>Comprehensive Documentation</strong>: Full roxygen2 documentation for all functions</li>
-<li>
-<strong>Usage Examples</strong>: Extensive examples covering common use cases</li>
-<li>
-<strong>Error Handling Guide</strong>: Complete guide for robust error handling patterns</li>
-<li>
-<strong>Vignette</strong>: Detailed introduction and tutorial</li>
-</ul></div>
-</div>
-<div class="section level3">
-<h3 id="technical-implementation-0-1-3">Technical Implementation<a class="anchor" aria-label="anchor" href="#technical-implementation-0-1-3"></a></h3>
-<div class="section level4">
-<h4 id="rust-backend-0-1-3">Rust Backend<a class="anchor" aria-label="anchor" href="#rust-backend-0-1-3"></a></h4>
-<ul><li>Built with extendr for seamless R-Rust integration</li>
-<li>Uses ort crate (v1.13.0+) for ONNX Runtime bindings</li>
-<li>Memory-safe implementation with comprehensive error handling</li>
-<li>Support for dynamic tensor dimensions and batch processing</li>
-</ul></div>
-<div class="section level4">
-<h4 id="r-frontend-0-1-3">R Frontend<a class="anchor" aria-label="anchor" href="#r-frontend-0-1-3"></a></h4>
-<ul><li>Intuitive API design following R conventions</li>
-<li>Consistent error handling across all functions</li>
-<li>Comprehensive input validation and type checking</li>
-<li>Integration with R’s native data structures</li>
-</ul></div>
-</div>
-<div class="section level3">
-<h3 id="system-requirements-0-1-3">System Requirements<a class="anchor" aria-label="anchor" href="#system-requirements-0-1-3"></a></h3>
-<ul><li>R (&gt;= 4.0.0)</li>
-<li>ONNX Runtime (&gt;= 1.13.0)</li>
-<li>Rust toolchain (for building from source)</li>
-</ul></div>
-<div class="section level3">
-<h3 id="known-limitations-0-1-3">Known Limitations<a class="anchor" aria-label="anchor" href="#known-limitations-0-1-3"></a></h3>
-<ul><li>ONNX Runtime library must be installed separately</li>
-<li>Some advanced ONNX features may not be fully supported</li>
-<li>Tensor conversion implementation is still being optimized</li>
-</ul></div>
-<div class="section level3">
-<h3 id="installation-0-1-3">Installation<a class="anchor" aria-label="anchor" href="#installation-0-1-3"></a></h3>
-<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Install from source (development version)</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"churon-project/churon"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="getting-started-0-1-3">Getting Started<a class="anchor" aria-label="anchor" href="#getting-started-0-1-3"></a></h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/mrchypark/churon" class="external-link">churon</a></span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Check ONNX Runtime availability</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu">check_onnx_runtime</span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="co"># Load example model</span></span>
-<span>  <span class="va">session</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/onnx_example_session.html">onnx_example_session</a></span><span class="op">(</span><span class="st">"kospacing"</span><span class="op">)</span></span>
-<span>  </span>
-<span>  <span class="co"># Get model information</span></span>
-<span>  <span class="va">input_info</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/onnx_input_info.html">onnx_input_info</a></span><span class="op">(</span><span class="va">session</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">input_info</span><span class="op">)</span></span>
-<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Please install ONNX Runtime first\n"</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-</div>
-</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -191,7 +65,7 @@
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
       </footer></div>
